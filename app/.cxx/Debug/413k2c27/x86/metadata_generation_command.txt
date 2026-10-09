@@ -1,0 +1,18 @@
+                        -H/home/tuananh/Code/TADaManager/Manager/app/src/main/cpp
+-DCMAKE_SYSTEM_NAME=Android
+-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+-DCMAKE_SYSTEM_VERSION=26
+-DANDROID_PLATFORM=android-26
+-DANDROID_ABI=x86
+-DCMAKE_ANDROID_ARCH_ABI=x86
+-DANDROID_NDK=/home/tuananh/Android/Sdk/ndk/28.2.13676358
+-DCMAKE_ANDROID_NDK=/home/tuananh/Android/Sdk/ndk/28.2.13676358
+-DCMAKE_TOOLCHAIN_FILE=/home/tuananh/Android/Sdk/ndk/28.2.13676358/build/cmake/android.toolchain.cmake
+-DCMAKE_MAKE_PROGRAM=/home/tuananh/Android/Sdk/cmake/3.22.1/bin/ninja
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/home/tuananh/Code/TADaManager/Manager/app/build/intermediates/cxx/Debug/413k2c27/obj/x86
+-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=/home/tuananh/Code/TADaManager/Manager/app/build/intermediates/cxx/Debug/413k2c27/obj/x86
+-DCMAKE_BUILD_TYPE=Debug
+-B/home/tuananh/Code/TADaManager/Manager/app/.cxx/Debug/413k2c27/x86
+-GNinja
+                        Build command args: []
+                        Version: 2

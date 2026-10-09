@@ -1,0 +1,27 @@
+{
+  "buildFiles": [
+    "/home/tuananh/Code/TADaManager/Manager/app/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/tuananh/Android/Sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/tuananh/Code/TADaManager/Manager/app/.cxx/Debug/413k2c27/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/tuananh/Android/Sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/tuananh/Code/TADaManager/Manager/app/.cxx/Debug/413k2c27/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "prop_override::@6890427a1f51a3e7e1df": {
+      "artifactName": "prop_override",
+      "abi": "x86",
+      "output": "/home/tuananh/Code/TADaManager/Manager/app/build/intermediates/cxx/Debug/413k2c27/obj/x86/libprop_override.so",
+      "runtimeFiles": []
+    }
+  }
+}

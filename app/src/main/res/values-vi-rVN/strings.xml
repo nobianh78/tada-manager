@@ -1399,5 +1399,6 @@ Chi tiết: %2$s"</string>
     <string name="tada_home_banner_subtitle">%1$d app sẵn sàng</string>
     <string name="tada_home_section_title">App của bạn</string>
     <string name="tada_home_patch_action">Vá</string>
+    <string name="tada_home_bundle_status">TADa Patches v%1$s \u2022 \u0111\u00e3 c\u1eadp nh\u1eadt</string>
 
 </resources>

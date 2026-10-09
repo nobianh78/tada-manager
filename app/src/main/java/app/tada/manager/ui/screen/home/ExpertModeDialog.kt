@@ -103,6 +103,57 @@ fun ExpertModeDialog(
     onDismiss: () -> Unit,
     onProceed: () -> Unit
 ) {
+    TadaExpertModeDialog(
+        packageName = packageName,
+        appName = appName,
+        appIcon = appIcon,
+        newPatches = newPatches,
+        options = options,
+        allPatchesInfo = allPatchesInfo,
+        totalSelectedCount = totalSelectedCount,
+        totalPatchesCount = totalPatchesCount,
+        hasMultipleBundles = hasMultipleBundles,
+        patchActions = patchActions,
+        savedPatches = savedPatches,
+        lockStateOf = lockStateOf,
+        holdsUniversalPatches = holdsUniversalPatches,
+        proceedText = proceedText,
+        warnOnMultipleBundles = warnOnMultipleBundles,
+        prereleaseBundleUids = prereleaseBundleUids,
+        hiddenSourceCount = hiddenSourceCount,
+        onShowHiddenSources = onShowHiddenSources,
+        onDismiss = onDismiss,
+        onProceed = onProceed
+    )
+}
+
+@Composable
+fun LegacyExpertModeDialog(
+    packageName: String,
+    appName: String? = null,
+    appIcon: Drawable? = null,
+    newPatches: Map<Int, Set<String>> = emptyMap(),
+    options: Options,
+    allPatchesInfo: List<Pair<PatchBundleInfo.Scoped, List<Pair<PatchInfo, Boolean>>>>,
+    totalSelectedCount: Int,
+    totalPatchesCount: Int,
+    hasMultipleBundles: Boolean,
+    patchActions: ExpertPatchActions,
+    savedPatches: PatchSelection = emptyMap(),
+    lockStateOf: (PatchInfo) -> PatchLockState = { PatchLockState.NONE },
+    /** True while "Enable all" still holds the universal patches of the given list back. */
+    holdsUniversalPatches: (bundleUid: Int, patches: List<Pair<PatchInfo, Boolean>>) -> Boolean = { _, _ -> false },
+    proceedText: String = stringResource(R.string.patch),
+    /** Off where mixing sources is the norm rather than something the user just did. */
+    warnOnMultipleBundles: Boolean = true,
+    /** Bundle UIDs currently receiving pre-release patch versions, shown as a warning header. */
+    prereleaseBundleUids: Set<Int> = emptySet(),
+    /** Sources this app is being kept from, which the notice above the list offers back. */
+    hiddenSourceCount: Int = 0,
+    onShowHiddenSources: () -> Unit = {},
+    onDismiss: () -> Unit,
+    onProceed: () -> Unit
+) {
     val selectedPatchForOptions = remember { mutableStateOf<Pair<Int, PatchInfo>?>(null) }
     val search = rememberSearchFieldState()
     val showMultipleSourcesWarning = remember { mutableStateOf(false) }

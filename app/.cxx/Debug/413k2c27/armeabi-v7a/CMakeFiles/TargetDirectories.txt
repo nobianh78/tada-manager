@@ -1,0 +1,3 @@
+/home/tuananh/Code/TADaManager/Manager/app/.cxx/Debug/413k2c27/armeabi-v7a/CMakeFiles/prop_override.dir
+/home/tuananh/Code/TADaManager/Manager/app/.cxx/Debug/413k2c27/armeabi-v7a/CMakeFiles/edit_cache.dir
+/home/tuananh/Code/TADaManager/Manager/app/.cxx/Debug/413k2c27/armeabi-v7a/CMakeFiles/rebuild_cache.dir

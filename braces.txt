@@ -1,0 +1,121 @@
+63:internal fun rememberPatchesSwipeAction(packageName: String): SwipeActionConfig {
+68:    return remember(label, container, content) {
+70:    }
+71:}
+75:internal fun rememberUnhideSwipeAction(): SwipeActionConfig {
+79:    return remember(label, container, content) {
+81:    }
+82:}
+94:) {
+97:    Box(modifier = modifier) {
+99:        if (startConfig != null && startProgress > 0.01f) {
+113:            ) {
+117:                        .graphicsLayer { alpha = startProgress },
+120:                ) {
+133:                }
+134:            }
+135:        }
+138:        if (endConfig != null && endProgress > 0.01f) {
+152:            ) {
+156:                        .graphicsLayer { alpha = endProgress },
+159:                ) {
+172:                }
+173:            }
+174:        }
+175:    }
+176:}
+193:) {
+203:    val startProgress by remember { derivedStateOf { (-offsetX.value / actionThresholdPx).coerceIn(0f, 1f) } }
+204:    val endProgress by remember { derivedStateOf { (offsetX.value / actionThresholdPx).coerceIn(0f, 1f) } }
+206:    Box(modifier = modifier.fillMaxWidth()) {
+211:                .graphicsLayer { translationX = offsetX.value * directionSign }
+213:                    if (enabled) Modifier.pointerInput(rtl) {
+215:                            onDragEnd = {
+216:                                scope.launch {
+217:                                    when {
+218:                                        offsetX.value < -actionThresholdPx -> {
+222:                                        }
+223:                                        offsetX.value > actionThresholdPx -> {
+227:                                        }
+235:                                    }
+236:                                }
+237:                            },
+238:                            onDragCancel = {
+239:                                scope.launch {
+247:                                }
+248:                            },
+249:                            onHorizontalDrag = { change, dragAmount ->
+251:                                scope.launch {
+255:                                }
+256:                            }
+258:                    } else Modifier
+260:        ) {
+262:        }
+263:    }
+264:}
+284:    onLongPress: () -> Unit = {},
+289:) {
+290:    val showHideDialog = remember { mutableStateOf(false) }
+294:    val actionThresholdPx = with(density) { 90.dp.toPx() }
+295:    val offsetX = remember { Animatable(0f) }
+298:    LaunchedEffect(isMultiSelectMode) {
+300:    }
+303:    LaunchedEffect(showGestureHint) {
+304:        if (!showGestureHint) {
+307:        }
+309:        val nudge = with(density) { 72.dp.toPx() }
+316:    }
+326:    val startConfig = remember(hideLabel, errorContainer, onErrorContainer) {
+333:    }
+336:    Box(modifier = modifier.fillMaxWidth().semantics {
+337:        customActions = buildList {
+341:            if (!isMultiSelectMode) {
+342:                add(CustomAccessibilityAction(selectLabel) { onLongPress(); true })
+343:            }
+344:            if (swipeActionsEnabled) {
+345:                add(CustomAccessibilityAction(hideLabel) { showHideDialog.value = true; true })
+346:                add(CustomAccessibilityAction(patchesLabel) { onShowPatches(); true })
+347:            }
+348:            if (onMoveUp != null) {
+349:                add(CustomAccessibilityAction(moveUpLabel) { onMoveUp(); true })
+350:            }
+351:            if (onMoveDown != null) {
+352:                add(CustomAccessibilityAction(moveDownLabel) { onMoveDown(); true })
+353:            }
+354:        }
+355:    }) {
+359:            onSwipeToStart = { showHideDialog.value = true },
+362:            background = { startProgress, endProgress ->
+372:            }
+373:        ) {
+379:            ) {
+380:                Column {
+384:                    onLongClick = {
+387:                    }
+394:            }
+395:        }
+396:    }
+398:        if (dragHandleModifier != null) {
+405:            ) {
+412:            }
+413:        }
+415:        if (showHideDialog.value) {
+418:                onDismiss = { showHideDialog.value = false },
+419:                onHide = {
+422:                }
+424:        }
+425:    }
+426:}
+442:) {
+444:    val actionThresholdPx = with(density) { 90.dp.toPx() }
+445:    val offsetX = remember { Animatable(0f) }
+453:            .graphicsLayer { alpha = 0.6f }
+454:    ) {
+462:            background = { startProgress, endProgress ->
+472:            }
+473:        ) {
+474:            Column {
+484:            }
+485:        }
+486:    }
+487:}

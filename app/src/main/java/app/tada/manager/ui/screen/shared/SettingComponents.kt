@@ -469,8 +469,8 @@ fun ExpandChevron(
 @Composable
 fun ForwardChevronIcon(
     modifier: Modifier = Modifier,
-    size: Dp = Defaults.IconSize,
-    tint: Color = MaterialTheme.colorScheme.primary
+    size: Dp = 16.dp,
+    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
 ) {
     ThemedIcon(
         icon = if (isRtl()) {
@@ -505,11 +505,26 @@ fun SettingsItem(
     SettingsItemCard(
         onClick = onClick,
         showBorder = showBorder,
+        color = Color.Transparent, // Transparent because SectionCard handles the background
         modifier = modifier
     ) {
+        val actualLeading = leadingContent ?: icon?.let {
+            {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ThemedIcon(icon = it, tint = MaterialTheme.colorScheme.primary, size = 18.dp)
+                }
+            }
+        }
+        
         IconTextRow(
-            modifier = Modifier.padding(Defaults.ContentPadding),
-            leadingContent = leadingContent ?: icon?.let { { ThemedIcon(icon = it) } },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            leadingContent = actualLeading,
             title = title,
             description = subtitle,
             trailingContent = when (statusContent) {
@@ -581,17 +596,15 @@ fun SectionCard(
     accentColor: Color? = null,
     content: @Composable () -> Unit
 ) {
-    val fill = cardFill()
-    SurfaceCard(
-        onClick = onClick,
-        elevation = Defaults.CardElevation,
-        cornerRadius = Defaults.SectionCornerRadius,
-        showBorder = true,
-        borderColor = appAccentBorder(accentColor),
-        color = fill,
-        modifier = modifier
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface, // Thẻ trắng
+        shadowElevation = 0.dp,
+        tonalElevation = 0.dp,
+        onClick = onClick ?: {}
     ) {
-        if (accentColor == null) content() else ProvideCardAccent(accentColor, fill, content)
+        if (accentColor == null) content() else ProvideCardAccent(accentColor, Color.White, content)
     }
 }
 
@@ -604,7 +617,10 @@ fun SettingsGroup(
     content: @Composable ColumnScope.() -> Unit
 ) {
     SectionCard(modifier = modifier) {
-        Column(content = content)
+        Column(content = {
+            // Apply dividers between items manually or just use the items as they are
+            content()
+        })
     }
 }
 

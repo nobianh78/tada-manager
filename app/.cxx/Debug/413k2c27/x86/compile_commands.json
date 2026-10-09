@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/tuananh/Code/TADaManager/Manager/app/.cxx/Debug/413k2c27/x86",
+  "command": "/home/tuananh/Android/Sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=i686-none-linux-android26 --sysroot=/home/tuananh/Android/Sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dprop_override_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -fPIC -o CMakeFiles/prop_override.dir/prop_override.cpp.o -c /home/tuananh/Code/TADaManager/Manager/app/src/main/cpp/prop_override.cpp",
+  "file": "/home/tuananh/Code/TADaManager/Manager/app/src/main/cpp/prop_override.cpp"
+},
+{
+  "directory": "/home/tuananh/Code/TADaManager/Manager/app/.cxx/Debug/413k2c27/x86",
+  "command": "/home/tuananh/Android/Sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=i686-none-linux-android26 --sysroot=/home/tuananh/Android/Sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dprop_override_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -fPIC -o CMakeFiles/prop_override.dir/syscall_guard.cpp.o -c /home/tuananh/Code/TADaManager/Manager/app/src/main/cpp/syscall_guard.cpp",
+  "file": "/home/tuananh/Code/TADaManager/Manager/app/src/main/cpp/syscall_guard.cpp"
+}
+]

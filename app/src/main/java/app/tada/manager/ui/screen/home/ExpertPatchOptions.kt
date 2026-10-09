@@ -6,6 +6,16 @@
 package app.tada.manager.ui.screen.home
 
 import android.graphics.drawable.Drawable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
@@ -28,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -230,79 +239,91 @@ internal fun PatchOptionsDialog(
     val showColorPicker = remember { mutableStateOf<Pair<String, String>?>(null) }
     val scrollState = rememberScrollState()
 
-    AppDialog(
-        onDismissRequest = onDismiss,
-        accentColor = accentColor,
-        footer = {
-            AppDialogOutlinedButton(
-                text = stringResource(R.string.close),
-                onClick = onDismiss,
-                modifier = Modifier.fillMaxWidth()
-            )
-        },
-        padding = DialogPadding.Compact,
-        scrollable = false,
-        contentArrangement = Arrangement.Top,
-        fillContentHeight = true,
-        hideFooterWhileTyping = true
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.surface
     ) {
-        ListDialogHeader(
-            icon = { modifier ->
-                AppIcon(packageName = packageName, icon = appIcon, contentDescription = null, modifier = modifier)
-            },
-            title = patch.displayName,
-            subtitle = listOf(
-                appName,
-                pluralStringResource(R.plurals.option_count, options.size, options.size.toString())
-            ).joinToString(" · ")
-        ) {
-            TitleAction(
-                icon = Icons.Outlined.Restore,
-                contentDescription = stringResource(R.string.reset),
-                onClick = onReset,
-                style = TitleActionStyle.Accent,
-                enabled = anyChanged
-            )
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .verticalScrollFade(scrollState)
-                .verticalScroll(scrollState)
-                .padding(vertical = Defaults.ItemSpacing),
-            // Spaced as the patch list the dialog opens from
-            verticalArrangement = Arrangement.spacedBy(Defaults.ContentPaddingSmall)
-        ) {
-            // What the patch does leads into its options
-            if (!patch.description.isNullOrBlank()) {
-                Text(
-                    text = rememberTranslated(patch.description),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = LocalDialogSecondaryTextColor.current
-                )
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            ) {
+                IconButton(onClick = onDismiss) {
+                    Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = patch.displayName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(text = "Tùy chọn bản vá", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (anyChanged) {
+                    TextButton(onClick = onReset) {
+                        Text("Đặt lại", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
             }
 
-            options.forEach { option ->
-                val value = valueOf(option)
-                PatchOptionEditor(
-                    option = option,
-                    value = value,
-                    heading = OptionHeading(
-                        title = option.title,
-                        // Only shown translated, the option kind is still told from the original
-                        description = rememberTranslated(option.description),
-                        required = option.required,
-                        missing = option.required && value.isUnsetOptionValue(),
-                        changed = !optionValueEquals(value, option.default),
-                        // Dropping the stored value puts the option back on the patch's own
-                        onReset = { onValueChange(option.key, null) }
-                    ),
-                    packageName = packageName,
-                    isDefaultBundle = isDefaultBundle,
-                    onValueChange = { onValueChange(option.key, it) },
-                    onCustomColorClick = { showColorPicker.value = option.key to it }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScrollFade(scrollState)
+                    .verticalScroll(scrollState)
+                    .padding(vertical = Defaults.ItemSpacing),
+                verticalArrangement = Arrangement.spacedBy(Defaults.ContentPaddingSmall)
+            ) {
+                // What the patch does leads into its options
+                if (!patch.description.isNullOrBlank()) {
+                    Text(
+                        text = rememberTranslated(patch.description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                options.forEach { option ->
+                    val value = valueOf(option)
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(modifier = Modifier.padding(12.dp)) {
+                            PatchOptionEditor(
+                                option = option,
+                                value = value,
+                                heading = OptionHeading(
+                                    title = option.title,
+                                    description = rememberTranslated(option.description),
+                                    required = option.required,
+                                    missing = option.required && value.isUnsetOptionValue(),
+                                    changed = !optionValueEquals(value, option.default),
+                                    onReset = { onValueChange(option.key, null) }
+                                ),
+                                packageName = packageName,
+                                isDefaultBundle = isDefaultBundle,
+                                onValueChange = { onValueChange(option.key, it) },
+                                onCustomColorClick = { showColorPicker.value = option.key to (it ?: "") }
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(
+                    text = "Lưu",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }

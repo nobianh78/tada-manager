@@ -368,6 +368,64 @@ fun SettingsScreen(
                         }
                 )
                 // Overlay sits outside the pager, which clips each page to its own bounds
+                
+                // --- BẮT ĐẦU HEADER CÀI ĐẶT ---
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    androidx.compose.material3.IconButton(
+                        onClick = { backPressedDispatcher?.onBackPressed() },
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        androidx.compose.material3.Icon(
+                            imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = backLabel,
+                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    androidx.compose.material3.Text(
+                        text = "Cài đặt",
+                        style = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                androidx.compose.material3.Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        androidx.compose.foundation.Image(
+                            painter = androidx.compose.ui.res.painterResource(app.tada.manager.R.drawable.tada_mascot),
+                            contentDescription = "TADa Mascot",
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            androidx.compose.material3.Text(
+                                text = "TADa Manager",
+                                style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            androidx.compose.material3.Text(
+                                text = app.tada.manager.BuildConfig.VERSION_NAME,
+                                style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                }
+                // --- KẾT THÚC HEADER CÀI ĐẶT ---
+                
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

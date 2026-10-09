@@ -1,0 +1,4 @@
+# ninja log v5
+0	47	1791525037292506780	CMakeFiles/prop_override.dir/syscall_guard.cpp.o	8428b02dfcb5f95a
+0	687	1791525037928507030	CMakeFiles/prop_override.dir/prop_override.cpp.o	a1c95588b0172b7d
+688	721	1791525037968507045	/home/tuananh/Code/TADaManager/Manager/app/build/intermediates/cxx/Debug/413k2c27/obj/x86/libprop_override.so	71c0aa7ee6d95dc9

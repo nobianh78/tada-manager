@@ -89,7 +89,7 @@ private const val DISABLED_SOURCE_ALPHA = 0.7f
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BundleManagementSheet(
+fun LegacyBundleManagementSheet(
     onDismissRequest: () -> Unit,
     onAddSource: () -> Unit,
     onDelete: (PatchBundleSource) -> Unit,

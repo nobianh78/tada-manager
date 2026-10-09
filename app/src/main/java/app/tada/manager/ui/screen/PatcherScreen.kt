@@ -612,47 +612,12 @@ private fun PatcherScreenContent(
                         else -> installState
                     }
 
-                    PatchingSuccess(
+                    TadaPatchingSuccess(
                         packageName = patcherViewModel.packageName,
-                        version = patcherViewModel.version,
+                        appName = patcherViewModel.packageName, // Should pass actual app name if available
                         patchCount = patcherViewModel.patchCount,
-                        sources = patchSources,
-                        installState = shownInstallState,
-                        installedPackageName = installedPackageName,
-                        usingMountInstall = usingMountInstall,
-                        excludedPatches = excludedPatches,
-                        isExpertMode = useExpertMode,
-                        showBackToGameHint = showBackToGameHint,
-                        onConfigureAppLinks = { showAppLinksDialog = true }.takeIf { linksOpenInBrowser },
-                        onLogsClick = {
-                            // Only the hint that was actually on screen counts as found
-                            if (showBackToGameHint) {
-                                scope.launch { prefs.backToGameHintSeen.update(true) }
-                            }
-                            patcherViewModel.hideSuccessScreen()
-                        },
                         onInstall = ::installPatchedApp,
-                        onUninstall = { packageName ->
-                            installViewModel.requestUninstall(packageName, installAfterUninstall = true)
-                        },
-                        onIgnoreSignatureMismatch = installViewModel::installIgnoringSignatureMismatch,
-                        onOpen = {
-                            installViewModel.openApp()
-                        },
-                        onShowInstallError = {
-                            scope.launch {
-                                // A run that patched fine has not collected these yet
-                                if (state.errorInfo == null) state.errorInfo = patcherViewModel.buildErrorInfo()
-                                state.shownFailure = PatcherFailure.INSTALL
-                            }
-                        },
-                        onHomeClick = onBackClick,
-                        onSaveClick = {
-                            if (!isSaving) {
-                                exportApkLauncher.launch(patcherViewModel.exportFileName)
-                            }
-                        },
-                        isSaving = isSaving
+                        onHomeClick = onBackClick
                     )
                 }
 

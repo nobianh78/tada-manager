@@ -262,7 +262,7 @@ fun SectionsLayout(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             androidx.compose.material3.Text(
-                                text = "TADa Patches v${patchVersion} • đã cập nhật",
+                                text = androidx.compose.ui.res.stringResource(app.tada.manager.R.string.tada_home_bundle_status, patchVersion),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
