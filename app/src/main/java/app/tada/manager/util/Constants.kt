@@ -18,9 +18,9 @@ const val tag = "TADa Manager"
 const val SOURCE_NAME = "TADa Patches"
 const val MANAGER_REPO_URL = "https://github.com/nobianh78/tada-manager" // TODO: replace with your fork's repo URL
 const val SOURCE_REPO_URL = "https://github.com/nobianh78/tada-patches"
-const val MORPHE_API_URL = "https://api.tada.software"
-const val MORPHE_WEBSITE_URL = "https://tada.software"
-const val COMMUNITY_PATCHES_URL = "https://tada-patches.software"
+const val MORPHE_API_URL = "https://api.morphe.software"
+const val MORPHE_WEBSITE_URL = "https://morphe.software"
+const val COMMUNITY_PATCHES_URL = "https://morphe-patches.software"
 const val BLOCKED_SOURCES_URL = "$MORPHE_API_URL/v2/blocked-sources"
 
 /** Website page behind add-source links: ?github|gitlab=owner/repo(&name=...) */
