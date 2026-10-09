@@ -1394,4 +1394,10 @@ Chi tiết: %2$s"</string>
     <string name="chat_patching_55">Xong %1$d/%2$d patch rồi đó, ráng xíu nữa!</string>
     <string name="chat_patching_85">Sắp xong rồi, đang đóng gói lại…</string>
 
+    <!-- TADa home screen -->
+    <string name="tada_home_banner_title">Vá app thôi!</string>
+    <string name="tada_home_banner_subtitle">%1$d app sẵn sàng</string>
+    <string name="tada_home_section_title">App của bạn</string>
+    <string name="tada_home_patch_action">Vá</string>
+
 </resources>

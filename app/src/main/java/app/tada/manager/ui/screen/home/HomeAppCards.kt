@@ -849,7 +849,7 @@ internal fun CompactAppCard(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             modifier = Modifier.height(36.dp)
         ) {
-            Text("Vá", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
+            Text(stringResource(R.string.tada_home_patch_action), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
         }
     }
 }

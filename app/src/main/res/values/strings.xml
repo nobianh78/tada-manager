@@ -1484,4 +1484,10 @@ Do you still want to continue?"</string>
     <string name="chat_patching_55">Finished %1$d/%2$d patches, almost there!</string>
     <string name="chat_patching_85">Almost done, packaging everything up…</string>
 
+<!-- TADa home screen -->
+    <string name="tada_home_banner_title">Let\u2019s patch!</string>
+    <string name="tada_home_banner_subtitle">%1$d apps ready</string>
+    <string name="tada_home_section_title">Your apps</string>
+    <string name="tada_home_patch_action">Patch</string>
+
 </resources>
