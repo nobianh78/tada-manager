@@ -93,6 +93,11 @@ fun HomeDialogs(
         val installedApkInfo = homeViewModel.pendingInstalledApkInfo
         val installedAppVersion = homeViewModel.pendingInstalledAppVersion
         val stockAppInstalled = homeViewModel.pendingStockAppInstalled == true
+        val resolvedDownloadUrl = homeViewModel.resolvedDownloadUrl
+
+        LaunchedEffect(selectedDownloadVersion, recommendedVersion) {
+            homeViewModel.resolveDownloadRedirect()
+        }
 
         ApkAvailabilityDialog(
             appName = appName,
@@ -100,6 +105,7 @@ fun HomeDialogs(
             recommendedVersion = recommendedVersion,
             compatibleVersions = compatibleVersions,
             selectedDownloadVersion = selectedDownloadVersion,
+            resolvedDownloadUrl = resolvedDownloadUrl,
             onVersionSelect = { homeViewModel.pendingSelectedDownloadVersion = it },
             usingMountInstall = usingMountInstall,
             stockAppInstalled = stockAppInstalled,
@@ -120,7 +126,6 @@ fun HomeDialogs(
                 scope.launch {
                     delay(50.milliseconds)
                     homeViewModel.showDownloadInstructionsDialog = true
-                    homeViewModel.resolveDownloadRedirect()
                 }
             },
             onUseSaved = {

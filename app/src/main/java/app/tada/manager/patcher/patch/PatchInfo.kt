@@ -296,8 +296,18 @@ data class Option<T>(
         description = option.description.orEmpty().withoutSourceIndent(),
         required = option.required,
         type = option.type,
-        default = option.default,
-        presets = option.values,
+        default = if (option.default is String) {
+            (option.default as String).replace("app.morphe", "app.tada") as T
+        } else {
+            option.default
+        },
+        presets = option.values?.mapValues {
+            if (it.value is String) {
+                (it.value as String).replace("app.morphe", "app.tada") as T
+            } else {
+                it.value
+            }
+        },
         validator = { option.validator(option, it) },
         explicitKind = extractExplicitKind(option),
         allowedExtensions = extractAllowedExtensions(option)?.toImmutableList(),

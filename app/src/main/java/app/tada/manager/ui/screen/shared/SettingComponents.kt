@@ -750,6 +750,7 @@ fun EmptyState(
     message: String,
     modifier: Modifier = Modifier,
     icon: ImageVector? = Icons.Outlined.FolderOff,
+    imageId: Int? = null,
     subtitle: String? = null,
     action: CardAction? = null,
     contentColor: Color = LocalDialogSecondaryTextColor.current
@@ -764,7 +765,13 @@ fun EmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Defaults.ItemSpacing)
     ) {
-        if (icon != null) {
+        if (imageId != null) {
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(id = imageId),
+                contentDescription = null,
+                modifier = Modifier.size(100.dp)
+            )
+        } else if (icon != null) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,

@@ -7,12 +7,14 @@ package app.tada.manager.ui.screen.shared
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -68,12 +70,14 @@ fun ValueLabel(
 fun ValueText(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.onSurface
+    color: Color = MaterialTheme.colorScheme.onSurface,
+    fontWeight: FontWeight? = null
 ) {
     Text(
         text = text,
         style = MaterialTheme.typography.bodyMedium,
         color = color,
+        fontWeight = fontWeight,
         modifier = modifier
     )
 }
@@ -109,18 +113,26 @@ fun InfoRow(
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(18.dp),
-            tint = onSurface.copy(alpha = 0.4f)
-        )
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primaryContainer,
+            modifier = Modifier.size(36.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center, ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
-            ValueLabel(text = label)
-            ValueText(text = value)
+            ValueLabel(text = label, color = onSurface.copy(alpha = 0.6f))
+            ValueText(text = value, color = onSurface, fontWeight = FontWeight.SemiBold)
         }
         when {
             trailing != null -> trailing()

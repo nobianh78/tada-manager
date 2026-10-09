@@ -49,7 +49,7 @@ import app.tada.manager.ui.screen.shared.ThemedIcon
 import app.tada.manager.ui.screen.shared.appAccentBorder
 import app.tada.manager.ui.screen.shared.usableAppAccent
 import app.tada.manager.ui.screen.shared.verticalScrollFade
-import app.tada.manager.ui.theme.TadaBrandPurple
+import app.tada.manager.ui.theme.TadaBrandAmber
 import app.tada.manager.ui.theme.TadaBrandAmber
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -118,7 +118,7 @@ enum class MiniGame(
         R.string.mini_game_pairs,
         R.string.mini_game_pairs_picker_subtitle,
         Icons.Outlined.Style,
-        TadaBrandPurple
+        TadaBrandAmber
     )
 }
 

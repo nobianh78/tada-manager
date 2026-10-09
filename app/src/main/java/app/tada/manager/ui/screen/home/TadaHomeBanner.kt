@@ -100,7 +100,7 @@ fun TadaHomeBanner(
                 .fillMaxWidth()
                 .background(
                     Brush.linearGradient(
-                        colors = listOf(Color(0xFFFFB74D), Color(0xFFF57C00))
+                        colors = listOf(Color(0xFFFFB74D), Color(0xFFF57C00)) // Soft bamboo green
                     )
                 )
                 .padding(16.dp)

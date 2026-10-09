@@ -25,7 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.tada.manager.ui.screen.shared.Defaults
-import app.tada.manager.ui.theme.TadaBrandPurple
+import app.tada.manager.ui.theme.TadaBrandAmber
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -220,7 +220,7 @@ private fun PairsCard(state: PairsGameState, index: Int, size: Dp) {
 }
 
 private val PairsBg           = Color(0xFF161B2B)
-private val PairsCardBack     = TadaBrandPurple
+private val PairsCardBack     = TadaBrandAmber
 private val PairsCardFace     = Color(0xFF262C40)
 private val PairsStrikeLeft   = Color(0xFF5CE8E7)
 private val PairsStrikeSpent  = Color(0xFF3A4055)

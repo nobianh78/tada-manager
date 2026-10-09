@@ -1716,6 +1716,7 @@ class HomeViewModel(
                 when (result) {
                     is ApkLoadResult.Success -> {
                         pickedApkIcon = result.icon?.let { result.app.file to it }
+                        pendingSelectedApp = result.app
                         processSelectedApp(result.app)
                     }
                     is ApkLoadResult.Unreadable -> app.toast(app.getString(R.string.home_invalid_apk_unreadable))
@@ -2711,7 +2712,11 @@ class HomeViewModel(
      * Handle download instructions continue.
      */
     fun handleDownloadInstructionsContinue(handOff: (String) -> Boolean) {
-        val urlToOpen = resolvedDownloadUrl!!
+        val urlToOpen = resolvedDownloadUrl
+        if (urlToOpen == null) {
+            app.toast("Đang chuẩn bị link tải, đợi chút")
+            return
+        }
 
         if (handOff(urlToOpen)) {
             showDownloadInstructionsDialog = false

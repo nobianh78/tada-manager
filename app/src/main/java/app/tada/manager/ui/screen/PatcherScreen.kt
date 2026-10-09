@@ -568,28 +568,14 @@ private fun PatcherScreenContent(
         ) { patcherState ->
             when (patcherState) {
                 PatcherState.IN_PROGRESS -> {
-                    if (useExpertMode) {
-                        ExpertPatchingInProgress(
-                            progress = { displayProgress.value },
-                            patchesProgress = patchesProgress,
-                            patchProgress = patcherViewModel.patchRun,
-                            packageName = patcherViewModel.packageName,
-                            patcherSucceeded = patcherSucceeded,
-                            miniGameState = miniGameState,
-                            onCancelClick = { state.showCancelDialog = true },
-                            onInstallClick = { patcherViewModel.showSuccess() },
-                            onHomeClick = onBackClick
-                        )
-                    } else {
-                        SimplePatchingInProgress(
-                            progress = { displayProgress.value },
-                            patchesProgress = patchesProgress,
-                            patchProgress = patcherViewModel.patchRun,
-                            packageName = patcherViewModel.packageName,
-                            showLongStepWarning = showLongStepWarning,
-                            onCancelClick = { state.showCancelDialog = true }
-                        )
-                    }
+                    SimplePatchingInProgress(
+                        progress = { displayProgress.value },
+                        patchesProgress = patchesProgress,
+                        patchProgress = patcherViewModel.patchRun,
+                        packageName = patcherViewModel.packageName,
+                        showLongStepWarning = showLongStepWarning,
+                        onCancelClick = { state.showCancelDialog = true }
+                    )
                 }
 
                 PatcherState.SUCCESS -> {

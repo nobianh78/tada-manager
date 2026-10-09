@@ -60,10 +60,17 @@ fun TadaExpertModeDialog(
         }
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.surface // Nền kem sáng
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
     ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surface // Nền kem sáng
+        ) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             // Header
             Row(
@@ -148,4 +155,5 @@ fun TadaExpertModeDialog(
             }
         }
     }
+}
 }

@@ -366,7 +366,7 @@ fun LegacyBundleManagementSheet(
                             item(key = "search_empty") {
                                 EmptyState(
                                     message = stringResource(R.string.search_no_results),
-                                    icon = Icons.Outlined.SearchOff
+                                    imageId = R.drawable.tada_mascot
                                 )
                             }
                         }

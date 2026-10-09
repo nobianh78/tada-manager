@@ -287,6 +287,7 @@ fun BatchPatcherScreen(
             recommendedVersion = choice.recommended,
             compatibleVersions = choice.compatible,
             selectedDownloadVersion = choice.selectedVersion,
+            resolvedDownloadUrl = "",
             onVersionSelect = viewModel::selectApkVersion,
             usingMountInstall = false,
             stockAppInstalled = choice.hasStockInstall,

@@ -1478,11 +1478,13 @@ Do you still want to continue?"</string>
     <string name="onboarding_restart_title">Feature tour</string>
     <string name="onboarding_restart_desc">A guided tour of key features</string>
 
-    <string name="chat_typing">typing…</string>
     <string name="chat_patching_start">Hi there! I am patching %1$s for you 🛠️</string>
-    <string name="chat_patching_25">Original file downloaded, now applying patches…</string>
-    <string name="chat_patching_55">Finished %1$d/%2$d patches, almost there!</string>
-    <string name="chat_patching_85">Almost done, packaging everything up…</string>
+    <string name="chat_patching_progress">Done %1$d%%, still working on it... 💪</string>
+    <string name="chat_patching_finished">All done! 🎉</string>
+    <string name="chat_typing">typing...</string>
+    <string name="chat_user_reply">Ok go ahead</string>
+    <string name="chat_header_status">patching %1$s...</string>
+    <string name="chat_bottom_status">%1$d%% • Patching %2$s...</string>
 
 <!-- TADa home screen -->
     <string name="tada_home_banner_title">Let\u2019s patch!</string>
@@ -1491,4 +1493,14 @@ Do you still want to continue?"</string>
     <string name="tada_home_patch_action">Patch</string>
     <string name="tada_home_bundle_status">TADa Patches v%1$s \u2022 up to date</string>
 
+
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="greeting_subtitle">What to patch today?</string>
+    <string name="home_hero_title">Ready to patch!</string>
+    <string name="home_hero_button">Patch now</string>
+    <string name="stat_patched">Patched</string>
+    <string name="stat_patches">Patches</string>
+    <string name="stat_pending">Pending</string>
 </resources>

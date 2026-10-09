@@ -16,6 +16,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.zIndex
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.unit.dp
 import app.tada.manager.domain.manager.HomeAppCategoryViewMode
 import app.tada.manager.ui.model.HomeAppItem
 import app.tada.manager.util.toast
@@ -162,36 +164,46 @@ internal fun LazyListScope.groupedAppCards(
 
         if (!group.collapsed) {
             items(
-                items = group.items,
-                key = { item -> "category_${group.id ?: "uncategorized"}_${item.id}" }
-            ) { item ->
-                val groupKey = group.selectionKey()
-                val isSelected = selectedPackages.contains(item.id) &&
-                        (state.selectedGroupKey == null || state.selectedGroupKey == groupKey)
-                DynamicAppCard(
-                    item = item,
-                    onAppClick = {
-                        if (state.isMultiSelectMode) {
-                            state.toggleInGroup(item.id, groupKey)
-                        } else {
-                            appActions.onAppClick(item)
+                items = group.items.chunked(2),
+                key = { chunk -> "category_${group.id ?: "uncategorized"}_${chunk.first().id}" }
+            ) { chunkItems ->
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier.fillMaxWidth().animateItem(),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+                ) {
+                    chunkItems.forEach { item ->
+                        val groupKey = group.selectionKey()
+                        val isSelected = selectedPackages.contains(item.id) &&
+                                (state.selectedGroupKey == null || state.selectedGroupKey == groupKey)
+                        androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {
+                            DynamicAppCard(
+                                item = item,
+                                onAppClick = {
+                                    if (state.isMultiSelectMode) {
+                                        state.toggleInGroup(item.id, groupKey)
+                                    } else {
+                                        appActions.onAppClick(item)
+                                    }
+                                },
+                                onHide = { appActions.onHideApp(item.id) },
+                                onShowPatches = { appActions.onShowPatches(item) },
+                                showGestureHint = item.id == firstFilteredPackage && showGestureHint,
+                                onGestureHintShown = appActions.onGestureHintShown,
+                                isSelected = isSelected,
+                                isMultiSelectMode = state.isMultiSelectMode,
+                                onLongPress = {
+                                    if (!state.isCategoryBarVisible) {
+                                        state.isMultiSelectMode = true
+                                        state.toggleInGroup(item.id, groupKey)
+                                    }
+                                }
+                            )
                         }
-                    },
-                    onHide = { appActions.onHideApp(item.id) },
-                    onShowPatches = { appActions.onShowPatches(item) },
-                    showGestureHint = item.id == firstFilteredPackage && showGestureHint,
-                    onGestureHintShown = appActions.onGestureHintShown,
-                    isSelected = isSelected,
-                    isMultiSelectMode = state.isMultiSelectMode,
-                    onLongPress = {
-                        // Skip so the category bar doesn't overlap with app multi-select
-                        if (!state.isCategoryBarVisible) {
-                            state.isMultiSelectMode = true
-                            state.toggleInGroup(item.id, groupKey)
-                        }
-                    },
-                    modifier = Modifier.animateItem()
-                )
+                    }
+                    if (chunkItems.size == 1) {
+                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
             }
         }
     }
@@ -211,63 +223,72 @@ internal fun LazyListScope.flatAppCards(
 ) {
     val selectedPackages = state.selectedPackages
     itemsIndexed(
-        items = items,
-        key = { _, item -> item.id }
-    ) { index, item ->
-        // Moves the card one step and reports where it landed, so a screen reader user hears
-        // the result of an action they cannot see
-        fun moveBy(offset: Int, announcePosition: Int) {
-            val current = state.localOrder.toMutableList()
-            val from = current.indexOf(item.id)
-            val target = from + offset
-            if (from < 0 || target !in current.indices) return
-            val moved = current.removeAt(from)
-            current.add(target, moved)
-            state.localOrder = current
-            appActions.onSaveOrder(current)
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            onMoveAnnouncement(
-                moveAnnouncementFormat.format(item.displayName, from + announcePosition, current.size)
-            )
-        }
-
-        DynamicAppCard(
-            item = item,
-            onAppClick = {
-                if (state.isMultiSelectMode) {
-                    // In multi-select mode taps toggle selection
-                    selectedPackages.toggle(item.id)
-                } else {
-                    appActions.onAppClick(item)
+        items = items.chunked(2),
+        key = { _, chunk -> chunk.first().id }
+    ) { chunkIndex, chunkItems ->
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.fillMaxWidth().animateItem(),
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+        ) {
+            chunkItems.forEachIndexed { itemIndex, item ->
+                val index = chunkIndex * 2 + itemIndex
+                // Moves the card one step and reports where it landed, so a screen reader user hears
+                // the result of an action they cannot see
+                fun moveBy(offset: Int, announcePosition: Int) {
+                    val current = state.localOrder.toMutableList()
+                    val from = current.indexOf(item.id)
+                    val target = from + offset
+                    if (from < 0 || target !in current.indices) return
+                    val moved = current.removeAt(from)
+                    current.add(target, moved)
+                    state.localOrder = current
+                    appActions.onSaveOrder(current)
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onMoveAnnouncement(
+                        moveAnnouncementFormat.format(item.displayName, from + announcePosition, current.size)
+                    )
                 }
-            },
-            onHide = { appActions.onHideApp(item.id) },
-            onShowPatches = { appActions.onShowPatches(item) },
-            // Hint plays only on the first card
-            showGestureHint = index == 0 && showGestureHint,
-            onGestureHintShown = appActions.onGestureHintShown,
-            isSelected = selectedPackages.contains(item.id),
-            isMultiSelectMode = state.isMultiSelectMode,
-            onLongPress = {
-                // Long-press enters multi-select and toggles this card
-                state.isMultiSelectMode = true
-                selectedPackages.toggle(item.id)
-            },
-            onMoveUp = if (directReorderAllowed && index > 0) {
-                { moveBy(offset = -1, announcePosition = 0) }
-            } else null,
-            onMoveDown = if (directReorderAllowed && index < items.size - 1) {
-                { moveBy(offset = 1, announcePosition = 2) }
-            } else null,
-            modifier = Modifier
-                .animateItem()
-                .then(
-                    if (index == 0 && onboardingState != null)
-                        Modifier.onGloballyPositioned { coords ->
-                            onboardingState.firstAppCardBounds = coords.boundsInWindow()
-                        }
-                    else Modifier
-                )
-        )
+
+                androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {
+                    DynamicAppCard(
+                        item = item,
+                        onAppClick = {
+                            if (state.isMultiSelectMode) {
+                                // In multi-select mode taps toggle selection
+                                selectedPackages.toggle(item.id)
+                            } else {
+                                appActions.onAppClick(item)
+                            }
+                        },
+                        onHide = { appActions.onHideApp(item.id) },
+                        onShowPatches = { appActions.onShowPatches(item) },
+                        // Hint plays only on the first card
+                        showGestureHint = index == 0 && showGestureHint,
+                        onGestureHintShown = appActions.onGestureHintShown,
+                        isSelected = selectedPackages.contains(item.id),
+                        isMultiSelectMode = state.isMultiSelectMode,
+                        onLongPress = {
+                            // Long-press enters multi-select and toggles this card
+                            state.isMultiSelectMode = true
+                            selectedPackages.toggle(item.id)
+                        },
+                        onMoveUp = if (directReorderAllowed && index > 0) {
+                            { moveBy(offset = -1, announcePosition = 0) }
+                        } else null,
+                        onMoveDown = if (directReorderAllowed && index < items.size - 1) {
+                            { moveBy(offset = 1, announcePosition = 2) }
+                        } else null,
+                        modifier = if (index == 0 && onboardingState != null)
+                            Modifier.onGloballyPositioned { coords ->
+                                onboardingState.firstAppCardBounds = coords.boundsInWindow()
+                            }
+                        else Modifier
+                    )
+                }
+            }
+            if (chunkItems.size == 1) {
+                androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
+            }
+        }
     }
 }

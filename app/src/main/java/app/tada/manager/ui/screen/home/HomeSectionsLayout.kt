@@ -42,6 +42,11 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -209,7 +214,11 @@ fun SectionsLayout(
         )
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFFDF6EC))
+    ) {
         // Main layout structure
         Column(
             modifier = Modifier
@@ -409,29 +418,12 @@ private fun AdaptiveContent(
                             verticalArrangement = if (isGroupedAppView) Arrangement.Top else Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // 1. Top Row
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                if (chromeFlags.showSearchButton) {
-                                    androidx.compose.material3.IconButton(onClick = searchState.onToggle) { androidx.compose.material3.Icon(Icons.Outlined.Search, "Search") }
-                                }
-                                if (chromeFlags.showSortButton) {
-                                    androidx.compose.material3.IconButton(onClick = onSortClick) { androidx.compose.material3.Icon(Icons.Outlined.Sort, "Sort") }
-                                }
-                                androidx.compose.material3.IconButton(onClick = chromeActions.onSettingsClick) { androidx.compose.material3.Icon(Icons.Outlined.Settings, "Settings") }
-                            }
-
-                            // 2. Banner with animated waving mascot
-                            TadaHomeBanner(
-                                appCount = apps.visible.size,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-
-                            // 3. Section Title
-                            TadaHomeSectionTitle(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp)
+                            HomeDashboardHeader(
+                                apps = apps,
+                                chromeFlags = chromeFlags,
+                                chromeActions = chromeActions,
+                                searchState = searchState,
+                                onSortClick = onSortClick
                             )
                             Box(modifier = Modifier.weight(1f, fill = isGroupedAppView)) {
                                 MainAppsSection(
@@ -487,29 +479,12 @@ private fun AdaptiveContent(
             ) {
                 // Section 2: Greeting - when disabled, show a small top spacer so
                 // the app cards don't sit flush against the top of the screen
-                // 1. Top Row
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                if (chromeFlags.showSearchButton) {
-                                    androidx.compose.material3.IconButton(onClick = searchState.onToggle) { androidx.compose.material3.Icon(Icons.Outlined.Search, "Search") }
-                                }
-                                if (chromeFlags.showSortButton) {
-                                    androidx.compose.material3.IconButton(onClick = onSortClick) { androidx.compose.material3.Icon(Icons.Outlined.Sort, "Sort") }
-                                }
-                                androidx.compose.material3.IconButton(onClick = chromeActions.onSettingsClick) { androidx.compose.material3.Icon(Icons.Outlined.Settings, "Settings") }
-                            }
-
-                            // 2. Banner with animated waving mascot
-                            TadaHomeBanner(
-                                appCount = apps.visible.size,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-
-                            // 3. Section Title
-                            TadaHomeSectionTitle(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp)
+                            HomeDashboardHeader(
+                                apps = apps,
+                                chromeFlags = chromeFlags,
+                                chromeActions = chromeActions,
+                                searchState = searchState,
+                                onSortClick = onSortClick
                             )
 
                 // Section 3: Scrollable app buttons
@@ -1188,7 +1163,7 @@ internal fun MainAppsSection(
                 if (isAllHiddenState) {
                     EmptyState(
                         message = stringResource(R.string.home_all_apps_hidden_title),
-                        icon = Icons.Outlined.VisibilityOff,
+                        imageId = R.drawable.tada_mascot,
                         subtitle = stringResource(R.string.home_all_apps_hidden_subtitle),
                         action = CardAction(
                             icon = Icons.Outlined.Visibility,
@@ -1200,7 +1175,7 @@ internal fun MainAppsSection(
                 } else {
                     EmptyState(
                         message = stringResource(R.string.home_no_apps_title),
-                        icon = Icons.Outlined.Inbox,
+                        imageId = R.drawable.tada_mascot,
                         subtitle = stringResource(R.string.home_no_apps_subtitle, stringResource(R.string.sources_management_title)),
                         action = CardAction(
                             icon = Icons.Outlined.Source,
@@ -1508,7 +1483,7 @@ private fun LazyListScope.filterEmptyState(
     item(key = "${keyPrefix}filter_empty") {
         EmptyState(
             message = stringResource(R.string.home_no_apps_filter_title),
-            icon = Icons.Outlined.FilterListOff,
+            imageId = R.drawable.tada_mascot,
             subtitle = stringResource(
                 R.string.home_no_apps_filter_subtitle,
                 stringResource(filterMode.labelRes)
@@ -1520,6 +1495,140 @@ private fun LazyListScope.filterEmptyState(
             ),
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.animateItem()
+        )
+    }
+}
+
+
+
+@Composable
+fun HomeDashboardHeader(
+    apps: HomeAppListUi,
+    chromeFlags: HomeChromeFlags,
+    chromeActions: HomeChromeActions,
+    searchState: HomeSearchState,
+    onSortClick: () -> Unit
+) {
+    val calendar = java.util.Calendar.getInstance()
+    val hour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
+    val greetingResId = when (hour) {
+        in 0..11 -> R.string.greeting_morning
+        in 12..17 -> R.string.greeting_afternoon
+        else -> R.string.greeting_evening
+    }
+    
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        // Header Row
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(greetingResId),
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = stringResource(R.string.greeting_subtitle),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Gray
+                )
+            }
+            
+            // Avatar
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(R.drawable.tada_mascot),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(Color.White, androidx.compose.foundation.shape.CircleShape)
+                    .padding(4.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            androidx.compose.material3.IconButton(
+                onClick = chromeActions.onSettingsClick,
+                modifier = Modifier.background(Color.White, androidx.compose.foundation.shape.CircleShape)
+            ) { 
+                androidx.compose.material3.Icon(Icons.Outlined.Settings, "Settings", tint = Color.Gray) 
+            }
+        }
+        
+        // Hero Card
+        androidx.compose.material3.Card(
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Brush.linearGradient(colors = listOf(Color(0xFFFFB74D), Color(0xFFE8930C))))
+                    .padding(16.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    androidx.compose.foundation.Image(
+                        painter = androidx.compose.ui.res.painterResource(R.drawable.tada_mascot_sit),
+                        contentDescription = null,
+                        modifier = Modifier.size(100.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = stringResource(R.string.home_hero_title),
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            color = Color(0xFF2D1F16)
+                        )
+                        Text(
+                            text = stringResource(R.string.tada_home_banner_subtitle, apps.visible.size),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF2D1F16).copy(alpha = 0.8f)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        androidx.compose.material3.Button(
+                            onClick = { /* TODO */ },
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color.White),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text(stringResource(R.string.home_hero_button), color = Color(0xFFE8930C), fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Stat Cards
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            @Composable
+            fun StatCard(num: Int, label: String, modifier: Modifier) {
+                androidx.compose.material3.Card(
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color.White),
+                    modifier = modifier
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                    ) {
+                        Text(num.toString(), style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), color = Color(0xFFE8930C))
+                        Text(label, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    }
+                }
+            }
+            StatCard(num = 12, label = stringResource(R.string.stat_patched), modifier = Modifier.weight(1f))
+            StatCard(num = 93, label = stringResource(R.string.stat_patches), modifier = Modifier.weight(1f))
+            StatCard(num = 3, label = stringResource(R.string.stat_pending), modifier = Modifier.weight(1f))
+        }
+        
+        // App Title
+        Text(
+            text = "App của bạn", // Will update string
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
     }
 }

@@ -6,7 +6,6 @@
 package app.tada.manager.util
 
 import androidx.compose.ui.graphics.Color
-import app.tada.manager.ui.theme.TadaBrandPurple
 import app.tada.manager.ui.theme.TadaBrandAmber
 import app.tada.manager.util.KnownApps.DEFAULT_COLORS
 import app.tada.manager.util.KnownApps.getAppName
@@ -48,7 +47,7 @@ object KnownApps {
     // const val X_TWITTER     = "com.twitter.android"
 
     // Shared TADa brand gradient tail
-    val GRADIENT_MID = TadaBrandPurple
+    val GRADIENT_MID = TadaBrandAmber
     val GRADIENT_END = TadaBrandAmber
 
     val DEFAULT_DOWNLOAD_COLOR = Color(0xFF0E3F6E)

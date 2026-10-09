@@ -57,8 +57,19 @@ fun coerceOptionValue(type: KType, value: Any?): Any? {
 fun Map<String, Patch<*>>.applyPatchOptions(
     options: Map<String, Map<String, Any?>>,
     logger: Logger
-) = options.forEach { (patchName, patchOptions) ->
-    val patch = this[patchName] ?: return@forEach
+) {
+    // Force override internal defaults for rebranding
+    this.values.forEach { patch ->
+        patch.options.forEach { (key, option) ->
+            val defaultVal = option.default
+            if (defaultVal is String && defaultVal.contains("app.morphe")) {
+                patch.options[key] = defaultVal.replace("app.morphe", "app.tada")
+            }
+        }
+    }
+
+    options.forEach { (patchName, patchOptions) ->
+        val patch = this[patchName] ?: return@forEach
 
     patchOptions.forEach setOption@{ (key, value) ->
         // Writing null would erase the default the patch falls back to
@@ -74,6 +85,7 @@ fun Map<String, Patch<*>>.applyPatchOptions(
         )
 
         patch.options[key] = coerced
+    }
     }
 }
 

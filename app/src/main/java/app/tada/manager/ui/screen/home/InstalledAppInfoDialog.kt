@@ -555,40 +555,69 @@ fun InstalledAppInfoDialog(
             val infoPanel = @Composable { modifier: Modifier, headerInset: Dp, content: LazyListScope.() -> Unit ->
                 Column(modifier = modifier) {
                     CompositionLocalProvider(LocalDialogHorizontalInset provides Defaults.ContentPadding) {
-                        ListDialogHeader(
-                            icon = { iconModifier ->
-                                // Resolved by name when the record has no metadata to show. A record
-                                // whose artifacts are gone carries no icon either, and the glass
-                                // placeholder tinted to the app's accent is what the home card shows
-                                // for it
-                                AppIcon(
-                                    packageInfo = appInfo,
-                                    packageName = packageName,
-                                    contentDescription = null,
-                                    placeholderGradientColors = listOf(infoAccentColor),
-                                    modifier = iconModifier.clip(RoundedCornerShape(DialogHeaderDefaults.IconCornerRadius))
-                                )
-                            },
-                            title = appLabel,
-                            subtitle = (appInfo?.versionName ?: installedApp.version).withVersionPrefix(),
-                            accentColor = infoAccentColor,
-                            // Wraps rather than clips: a clone carries a chip more than other installs do
-                            badges = if (compactHeader) null else { { badges() } },
-                            // Compact mode: chips column on the right
-                            actions = if (compactHeader) {
-                                {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(Defaults.ContentPaddingSmall),
-                                        horizontalAlignment = Alignment.End
-                                    ) {
-                                        badges()
-                                    }
-                                }
-                            } else null,
+                        Column(
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .statusBarsPadding()
                                 .padding(horizontal = Defaults.ContentPadding + headerInset)
-                        )
+                        ) {
+                            // Header with Back button and Panda
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                androidx.compose.material3.IconButton(onClick = onDismiss) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.ArrowBack,
+                                        contentDescription = "Back",
+                                        tint = MaterialTheme.colorScheme.onBackground
+                                    )
+                                }
+                                androidx.compose.foundation.Image(
+                                    painter = androidx.compose.ui.res.painterResource(id = R.drawable.tada_mascot_wave),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(72.dp).padding(end = 8.dp)
+                                )
+                            }
+                            
+                            // App Icon and Title
+                            Column(
+                                modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                AppIcon(
+                                    packageInfo = null,
+                                    packageName = installedApp.originalPackageName ?: packageName,
+                                    preferredSource = AppDataSource.BUNDLE_METADATA,
+                                    contentDescription = null,
+                                    placeholderGradientColors = listOf(infoAccentColor),
+                                    modifier = Modifier.size(72.dp).clip(androidx.compose.foundation.shape.CircleShape)
+                                )
+                                androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = appLabel,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                                Text(
+                                    text = "${(appInfo?.versionName ?: installedApp.version).withVersionPrefix()} • đã vá",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                )
+                            }
+                            
+                            // Pills row
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                badges()
+                            }
+                            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+                        }
                     }
 
                     DialogLazyList(
@@ -1162,108 +1191,132 @@ private fun InfoSection(
         }
     }
 
-    // Edged like the app's cards elsewhere, so the panel reads as part of the app's dialog
-    SurfaceCard(
-        cornerRadius = Defaults.CardCornerRadius,
-        showBorder = true,
-        borderColor = appAccentBorder(accentColor),
-        color = cardFill(),
-        modifier = modifier
-    ) {
-        Column {
-            InfoRow(
-                icon = Icons.Outlined.Inventory2,
-                label = stringResource(R.string.package_name),
-                value = installedApp.currentPackageName
-            )
-
-            if (installedApp.originalPackageName != installedApp.currentPackageName) {
-                SettingsDivider()
+    Column(modifier = modifier) {
+        // Main Info Card
+        SurfaceCard(
+            cornerRadius = 24.dp,
+            showBorder = false,
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column {
                 InfoRow(
-                    icon = Icons.Outlined.Category,
-                    label = stringResource(R.string.home_app_info_original_package_name),
-                    value = installedApp.originalPackageName
+                    icon = Icons.Outlined.Inventory2,
+                    label = stringResource(R.string.package_name),
+                    value = installedApp.currentPackageName
                 )
-            }
 
-            // Kept in place even while a banner above says the same thing, so the version the
-            // sources cover can be looked up rather than only met as a warning. A version that
-            // was turned down is where the offer is taken back up again
-            InfoSlot(supportedVersion) { version ->
-                val supportedVersionLabel = stringResource(R.string.home_app_info_newest_supported_version)
-                if (onStopIgnoringVersion != null) {
-                    InfoRowWithAction(
-                        icon = Icons.Outlined.VisibilityOff,
-                        label = supportedVersionLabel,
-                        value = version.withVersionPrefix(),
-                        onAction = onStopIgnoringVersion,
-                        actionIcon = Icons.Outlined.Visibility,
-                        actionContentDescription = stringResource(R.string.stop_ignoring)
-                    )
-                } else {
+                if (installedApp.originalPackageName != installedApp.currentPackageName) {
+                    SettingsDivider()
                     InfoRow(
-                        icon = Icons.Outlined.Update,
-                        label = supportedVersionLabel,
-                        value = version.withVersionPrefix()
+                        icon = Icons.Outlined.Category,
+                        label = stringResource(R.string.home_app_info_original_package_name),
+                        value = installedApp.originalPackageName
+                    )
+                }
+
+                InfoSlot(supportedVersion) { version ->
+                    val supportedVersionLabel = stringResource(R.string.home_app_info_newest_supported_version)
+                    if (onStopIgnoringVersion != null) {
+                        InfoRowWithAction(
+                            icon = Icons.Outlined.VisibilityOff,
+                            label = supportedVersionLabel,
+                            value = version.withVersionPrefix(),
+                            onAction = onStopIgnoringVersion,
+                            actionIcon = Icons.Outlined.Visibility,
+                            actionContentDescription = stringResource(R.string.stop_ignoring)
+                        )
+                    } else {
+                        InfoRow(
+                            icon = Icons.Outlined.Update,
+                            label = supportedVersionLabel,
+                            value = version.withVersionPrefix()
+                        )
+                    }
+                }
+
+                InfoSlot(apkSize) { size ->
+                    InfoRow(
+                        icon = Icons.Outlined.SdCard,
+                        label = stringResource(R.string.home_app_info_apk_size),
+                        value = size
+                    )
+                }
+
+                InfoSlot(apkAbis.takeIf { it.isNotEmpty() }) { abis ->
+                    InfoRow(
+                        icon = Icons.Outlined.Memory,
+                        label = stringResource(R.string.home_app_info_cpu_arch),
+                        value = abis.joinToString(" • ")
+                    )
+                }
+
+                InfoSlot(totalPatches.takeIf { it > 0 }) { count ->
+                    InfoRowWithAction(
+                        icon = Icons.Outlined.DoneAll,
+                        label = stringResource(R.string.home_app_info_applied_patches),
+                        value = pluralStringResource(R.plurals.patch_count, count, count.toString()),
+                        onAction = onShowPatches
+                    )
+                }
+
+                InfoSlot(bundlesUsedSummary.takeIf { it.isNotBlank() }) { summary ->
+                    InfoRow(
+                        icon = Icons.Outlined.Source,
+                        label = stringResource(R.string.home_app_info_patch_source_used),
+                        value = summary
                     )
                 }
             }
+        }
 
-            InfoSlot(apkSize) { size ->
-                InfoRow(
-                    icon = Icons.Outlined.SdCard,
-                    label = stringResource(R.string.home_app_info_apk_size),
-                    value = size
+        // App Links Status Card
+        if (appLinksStatus != null && appLinksStatus.hasSupportedLinks) {
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+            val linksValue = if (appLinksStatus.isFullyConfigured) {
+                pluralStringResource(
+                    R.plurals.app_links_count_enabled,
+                    appLinksStatus.domains.size,
+                    appLinksStatus.domains.size
+                )
+            } else {
+                pluralStringResource(
+                    R.plurals.app_links_count_unverified,
+                    appLinksStatus.unhandledDomains.size,
+                    appLinksStatus.unhandledDomains.size
                 )
             }
-
-            InfoSlot(apkAbis.takeIf { it.isNotEmpty() }) { abis ->
-                InfoRow(
-                    icon = Icons.Outlined.Memory,
-                    label = stringResource(R.string.home_app_info_cpu_arch),
-                    value = abis.joinToString(" • ")
-                )
-            }
-
-            InfoSlot(totalPatches.takeIf { it > 0 }) { count ->
-                InfoRowWithAction(
-                    icon = Icons.Outlined.DoneAll,
-                    label = stringResource(R.string.home_app_info_applied_patches),
-                    value = pluralStringResource(R.plurals.patch_count, count, count.toString()),
-                    onAction = onShowPatches
-                )
-            }
-
-            InfoSlot(bundlesUsedSummary.takeIf { it.isNotBlank() }) { summary ->
-                InfoRow(
-                    icon = Icons.Outlined.Source,
-                    label = stringResource(R.string.home_app_info_patch_source_used),
-                    value = summary
-                )
-            }
-
-            InfoSlot(appLinksStatus?.takeIf { it.hasSupportedLinks }) { status ->
-                val linksValue = if (status.isFullyConfigured) {
-                    pluralStringResource(
-                        R.plurals.app_links_count_enabled,
-                        status.domains.size,
-                        status.domains.size
-                    )
-                } else {
-                    pluralStringResource(
-                        R.plurals.app_links_count_unverified,
-                        status.unhandledDomains.size,
-                        status.unhandledDomains.size
-                    )
+            SurfaceCard(
+                cornerRadius = 16.dp,
+                showBorder = false,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = if (appLinksStatus.isFullyConfigured) stringResource(R.string.app_links_title) else "Liên kết web chưa được xác minh",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = linksValue,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
+                    androidx.compose.material3.TextButton(onClick = onOpenAppLinks) {
+                        Text(
+                            text = if (appLinksStatus.isFullyConfigured) stringResource(R.string.configure) else "Sửa liên kết",
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
-                InfoRowWithAction(
-                    icon = if (status.isFullyConfigured) Icons.Outlined.Link else Icons.Outlined.LinkOff,
-                    label = stringResource(R.string.app_links_title),
-                    value = linksValue,
-                    onAction = onOpenAppLinks,
-                    actionIcon = Icons.Outlined.Settings,
-                    actionContentDescription = stringResource(R.string.configure)
-                )
             }
         }
     }

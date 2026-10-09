@@ -28,7 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.tada.manager.R
 import app.tada.manager.ui.screen.shared.Defaults
-import app.tada.manager.ui.theme.TadaBrandPurple
+import app.tada.manager.ui.theme.TadaBrandAmber
 import app.tada.manager.ui.theme.TadaBrandAmber
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -199,5 +199,5 @@ private fun SnakeCanvas(state: SnakeGameState, modifier: Modifier) {
 private val SnakeBg   = Color(0xFF0B1A2E)
 private val SnakeGrid = Color(0x0EFFFFFF)
 private val SnakeHead = TadaBrandAmber
-private val SnakeBody = TadaBrandPurple
+private val SnakeBody = TadaBrandAmber
 private val SnakeFood = Color(0xFF5CE8E7)

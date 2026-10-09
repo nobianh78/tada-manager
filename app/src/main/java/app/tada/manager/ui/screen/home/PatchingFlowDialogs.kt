@@ -38,6 +38,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.background
 import app.tada.manager.R
 import app.tada.manager.domain.apk.InstalledApkInfo
 import app.tada.manager.domain.apk.SavedApkInfo
@@ -63,6 +65,7 @@ internal fun ApkAvailabilityDialog(
     recommendedVersion: AppTarget?,
     compatibleVersions: List<BundledAppTarget>,
     selectedDownloadVersion: AppTarget?,
+    resolvedDownloadUrl: String?,
     onVersionSelect: (AppTarget) -> Unit,
     usingMountInstall: Boolean,
     stockAppInstalled: Boolean,
@@ -76,140 +79,96 @@ internal fun ApkAvailabilityDialog(
     onUseSaved: () -> Unit,
     onUseInstalled: () -> Unit
 ) {
-    // Every check below still runs against the full set: an APK already on the device stays
-    // usable whatever the experimental toggle says, it is only the picker that narrows
     val offeredVersions = remember(compatibleVersions) { compatibleVersions.offered() }
 
-    // The installed APK is dropped upstream when the patches do not target it, but a saved
-    // copy is offered whatever it is: it may be the only APK the user still has
-    val savedApkMatchesTargets = remember(savedApkInfo, compatibleVersions) {
-        savedApkInfo == null ||
-            compatibleVersions.patchableAt(savedApkInfo.version, savedApkInfo.versionCode)
-    }
-
-    // The build code is worth printing only where it is the whole difference: the targets name
-    // this version, and refuse this build of it. A version they do not name at all is already
-    // visible in the version beside the button
-    val savedApkBuildRefused = remember(savedApkInfo, savedApkMatchesTargets, compatibleVersions) {
-        savedApkInfo != null && !savedApkMatchesTargets &&
-            compatibleVersions.any { it.target.version == savedApkInfo.version }
-    }
-
-    // What the list below prints: the version on the device is called out under it only when
-    // the list is not already showing that version
-    val listedVersions = remember(isExpertMode, offeredVersions, recommendedVersion) {
-        if (isExpertMode && offeredVersions.isNotEmpty()) {
-            offeredVersions.mapNotNullTo(mutableSetOf()) { it.target.version }
-        } else {
-            setOfNotNull(recommendedVersion?.version)
-        }
-    }
-    val unlistedInstalledVersion = installedAppVersion?.takeIf { it !in listedVersions }
-
-    // Versions whose minSdk exceeds the current device - shown greyed-out and non-selectable
-    val incompatibleSdkVersions: Set<String> = remember(offeredVersions) {
-        offeredVersions
-            .filterNot { it.installableOnDevice() }
-            .mapNotNullTo(mutableSetOf()) { it.target.version }
-    }
     AppDialog(
         onDismissRequest = onDismiss,
-        accentColor = rememberAppColor(packageName),
-        title = stringResource(R.string.home_apk_availability_dialog_title),
-        padding = DialogPadding.Compact,
-        footer = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Main action buttons
-                AppDialogButtonRow(
-                    primaryText = stringResource(R.string.home_apk_availability_yes),
-                    onPrimaryClick = onNeedApk,
-                    primaryIcon = Icons.Outlined.Download,
-                    secondaryText = stringResource(R.string.home_apk_availability_no),
-                    onSecondaryClick = onHaveApk,
-                    secondaryIcon = Icons.Outlined.Check,
-                    layout = DialogButtonLayout.Vertical
-                )
-
-                // When saved and installed APKs share the same version, prefer the saved copy.
-                // Hide the installed button in that case to avoid showing two equivalent sources
-                val preferSavedOverInstalled = savedApkInfo != null &&
-                    savedApkInfo.version == installedApkInfo?.version
-
-                // Saved APK button - always shown when a saved APK exists
-                if (savedApkInfo != null) {
-                    AppDialogOutlinedButton(
-                        text = stringResource(R.string.home_apk_use_saved),
-                        textSuffix = if (savedApkBuildRefused) {
-                            buildVersionSuffix(savedApkInfo.version, savedApkInfo.versionCode)
-                        } else {
-                            "v${savedApkInfo.version}"
-                        },
-                        onClick = onUseSaved,
-                        icon = Icons.Outlined.History,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    // Taking it leads to the unsupported-version dialog, which is a wasted tap
-                    // unless the user is told here what is wrong with the copy they kept
-                    if (!savedApkMatchesTargets) {
-                        Notice(
-                            text = stringResource(R.string.home_apk_use_saved_unsupported),
-                            tone = SemanticTone.Warning,
-                            icon = Icons.Outlined.Warning,
-                            density = NoticeDensity.Compact
-                        )
-                    }
-                }
-
-                // Installed APK button - hidden when saved mono-APK covers the same split version
-                if (installedApkInfo != null && !preferSavedOverInstalled) {
-                    AppDialogOutlinedButton(
-                        text = stringResource(R.string.home_apk_use_installed),
-                        // Never the wrong build: an installed APK the patches do not target is
-                        // dropped before it reaches this dialog
-                        textSuffix = "v${installedApkInfo.version}",
-                        onClick = onUseInstalled,
-                        icon = Icons.Outlined.PhoneAndroid,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    // The certificate check could not run, so the installed app may already be patched
-                    if (installedApkInfo.patchStateUnknown) {
-                        Notice(
-                            text = stringResource(R.string.home_apk_use_installed_unverified),
-                            tone = SemanticTone.Warning,
-                            icon = Icons.Outlined.Warning,
-                            density = NoticeDensity.Compact
-                        )
-                    }
-                }
-            }
-        }
+        padding = DialogPadding.None
     ) {
-        val secondaryColor = LocalDialogSecondaryTextColor.current
-        val anyString = stringResource(R.string.any_version)
-
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(Defaults.ContentPadding),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            if (isExpertMode && offeredVersions.isNotEmpty()) {
-                // Expert mode: selectable version list
-                Text(
-                    text = htmlAnnotatedString(stringResource(
-                        R.string.home_apk_availability_dialog_expert,
-                        appName
-                    )),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = secondaryColor,
-                    textAlign = TextAlign.Center
-                )
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                androidx.compose.material3.IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Outlined.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AppIcon(packageName = packageName, contentDescription = null, modifier = Modifier.size(36.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = appName,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(48.dp)) // balance the back button
+            }
 
-                if (offeredVersions.size > 1) {
+            // Hero section with Panda
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(0.65f).padding(top = 16.dp, bottom = 16.dp)
+                ) {
+                    Text(
+                        text = "Chưa tìm được\nAPK gốc?",
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        lineHeight = 40.sp
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Để vá $appName, bạn cần APK chưa vá thuộc một trong các phiên bản:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                    )
+                }
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = R.drawable.tada_mascot),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(160.dp)
+                        .offset(x = 30.dp, y = (-10).dp),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                )
+            }
+
+            // White Card for versions
+            SurfaceCard(
+                cornerRadius = 24.dp,
+                showBorder = false,
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 8.dp)
+                    .weight(1f, fill = false)
+            ) {
+                val anyString = stringResource(R.string.any_version)
+                val incompatibleSdkVersions = remember(offeredVersions) {
+                    offeredVersions.filterNot { it.installableOnDevice() }.mapNotNullTo(mutableSetOf()) { it.target.version }
+                }
+
+                if (isExpertMode && offeredVersions.isNotEmpty() && offeredVersions.size > 1) {
                     SelectableVersionListCard(
                         versions = offeredVersions,
                         selectedVersion = selectedDownloadVersion,
@@ -221,68 +180,87 @@ internal fun ApkAvailabilityDialog(
                         installedVersion = installedAppVersion,
                     )
                 } else {
+                    val versionsToList = if (isExpertMode && offeredVersions.isNotEmpty()) {
+                        offeredVersions.map { it.target.version ?: anyString }
+                    } else {
+                        listOf(recommendedVersion?.version ?: anyString)
+                    }
+
                     VersionListCard(
-                        versions = offeredVersions.map { it.target.version ?: anyString },
-                        experimentalVersions = offeredVersions.experimentalVersions(),
-                        descriptions = offeredVersions
-                            .mapNotNull { b -> b.target.version?.let { v -> b.target.description?.let { d -> v to d } } }
-                            .toMap(),
+                        versions = versionsToList,
+                        experimentalVersions = if (isExpertMode) offeredVersions.experimentalVersions() else emptySet(),
+                        descriptions = if (isExpertMode) offeredVersions.mapNotNull { b -> b.target.version?.let { v -> b.target.description?.let { d -> v to d } } }.toMap() else emptyMap(),
                         incompatibleSdkVersions = incompatibleSdkVersions,
-                        versionCodes = offeredVersions
-                            .mapNotNull { b ->
-                                val v = b.target.version ?: return@mapNotNull null
-                                val codes = b.buildCodes ?: return@mapNotNull null
-                                v to codes
-                            }
-                            .toMap(),
+                        versionCodes = if (isExpertMode) offeredVersions.mapNotNull { b -> b.target.version?.let { v -> b.buildCodes?.let { v to it } } }.toMap() else compatibleVersions.firstOrNull { it.target.version == recommendedVersion?.version }?.let { b -> b.target.version?.let { v -> b.buildCodes?.let { mapOf(v to it) } } } ?: emptyMap(),
                         savedVersion = savedApkInfo?.version,
                         installedVersion = installedAppVersion,
+                        showUnpatchedBadge = !isExpertMode
                     )
                 }
-            } else {
-                // Simple mode: single static version, no selection
-                Text(
-                    text = htmlAnnotatedString(stringResource(
-                        R.string.home_apk_availability_dialog_simple,
-                        appName
-                    )),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = secondaryColor,
-                    textAlign = TextAlign.Center
-                )
-
-                VersionListCard(
-                    versions = listOf(recommendedVersion?.version ?: anyString),
-                    showUnpatchedBadge = true,
-                    versionCodes = compatibleVersions
-                        .firstOrNull { it.target.version == recommendedVersion?.version }
-                        ?.let { b -> b.target.version?.let { v -> b.buildCodes?.let { mapOf(v to it) } } }
-                        ?: emptyMap(),
-                    savedVersion = savedApkInfo?.version,
-                    installedVersion = installedAppVersion
-                )
             }
 
-            // For reference only, so neutral rather than a warning
-            unlistedInstalledVersion?.let {
-                Notice(
-                    text = stringResource(
-                        R.string.home_apk_availability_installed_version,
-                        it.withVersionPrefix()
-                    ),
-                    tone = SemanticTone.Neutral,
-                    icon = Icons.Outlined.InstallMobile,
-                    density = NoticeDensity.Compact
-                )
-            }
+            // Buttons at the bottom
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                val preferSavedOverInstalled = savedApkInfo != null && savedApkInfo.version == installedApkInfo?.version
 
-            // Root mode warning - only when there is no app on the device to mount over
-            if (usingMountInstall && !stockAppInstalled) {
-                Notice(
-                    text = stringResource(R.string.root_install_apk_required),
-                    tone = SemanticTone.Warning,
-                    icon = Icons.Outlined.Warning
-                )
+                if (installedApkInfo != null && !preferSavedOverInstalled) {
+                    androidx.compose.material3.Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = androidx.compose.foundation.shape.CircleShape
+                    ) {
+                        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.PhoneAndroid, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.width(6.dp))
+                            Text("Đã cài đặt trên thiết bị này: v${installedApkInfo.version}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+
+                androidx.compose.material3.Button(
+                    onClick = onNeedApk,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    enabled = resolvedDownloadUrl != null
+                ) {
+                    if (resolvedDownloadUrl == null) {
+                        androidx.compose.material3.CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                    } else {
+                        Icon(Icons.Outlined.Download, null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Tải APK giúp tôi", style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+
+                androidx.compose.material3.OutlinedButton(
+                    onClick = onHaveApk,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+                ) {
+                    Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Tôi có APK rồi", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                }
+
+                if (savedApkInfo != null) {
+                    androidx.compose.material3.OutlinedButton(
+                        onClick = onUseSaved,
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+                    ) {
+                        Icon(Icons.Outlined.History, null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Dùng APK đã lưu v${savedApkInfo.version}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
             }
         }
     }

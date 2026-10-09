@@ -235,23 +235,56 @@ internal fun HomeAppCard(
     showStatusBadges: Boolean = true,
     onLongClick: (() -> Unit)? = null
 ) {
-    val installedApp = item.installedApp
-    if (installedApp != null) {
-        InstalledAppCard(
-            item = item,
-            installedApp = installedApp,
-            showStatusBadges = showStatusBadges,
-            onClick = onClick,
-            onLongClick = onLongClick,
-            modifier = modifier
-        )
-    } else {
-        NotPatchedAppCard(
-            item = item,
-            onClick = onClick,
-            onLongClick = onLongClick,
-            modifier = modifier
-        )
+    val version = item.version.ifEmpty { "1.0.0" }
+    androidx.compose.material3.Card(
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color.White),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AppIcon(
+                packageInfo = item.packageInfo,
+                packageName = item.installedApp?.currentPackageName ?: item.packageName,
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                preferredSource = app.tada.manager.util.AppDataSource.INSTALLED,
+                placeholderGradientColors = item.gradientColors
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = item.displayName,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF2D1F16),
+                maxLines = 2,
+                minLines = 2,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = version,
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray,
+                maxLines = 1
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            androidx.compose.material3.Button(
+                onClick = onClick,
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFFE8930C)),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                modifier = Modifier.height(32.dp).fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.patch), color = Color.White, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+            }
+        }
     }
 }
 
@@ -783,21 +816,17 @@ internal fun CompactAppCard(
     onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    val installedApp = item.installedApp
-    val version = remember(item) { item.version.withVersionPrefix() }
-    val subtitle = remember(item) {
-        listOfNotNull(item.nameSuffix, version.ifEmpty { null }).joinToString(" • ")
-    }
-    
+    val version = item.version.ifEmpty { "1.0.0" }
     val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     val view = LocalView.current
     val longClickLabel = stringResource(R.string.accessibility_select_app).takeIf { onLongClick != null }
-    val isNotPatched = installedApp == null
     
-    Row(
+    androidx.compose.material3.Card(
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color.White),
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(vertical = 4.dp)
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -812,44 +841,48 @@ internal fun CompactAppCard(
                         onLongClick()
                     }
                 } else null
-            ),
-        verticalAlignment = Alignment.CenterVertically
+            )
     ) {
-        AppIcon(
-            packageInfo = item.packageInfo,
-            packageName = installedApp?.currentPackageName ?: item.packageName,
-            contentDescription = null,
-            modifier = Modifier.size(48.dp).clip(CircleShape),
-            preferredSource = if (installedApp != null) AppDataSource.INSTALLED else AppDataSource.PATCHED_APK,
-            placeholderGradientColors = item.gradientColors
-        )
-        Spacer(Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AppIcon(
+                packageInfo = item.packageInfo,
+                packageName = item.installedApp?.currentPackageName ?: item.packageName,
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                preferredSource = app.tada.manager.util.AppDataSource.INSTALLED,
+                placeholderGradientColors = item.gradientColors
+            )
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = item.displayName,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
+                color = Color(0xFF2D1F16),
+                maxLines = 2,
+                minLines = 2,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = if (isNotPatched) stringResource(R.string.home_not_patched_yet) else subtitle,
+                text = version,
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 1
             )
-        }
-        Spacer(Modifier.width(8.dp))
-        OutlinedButton(
-            onClick = onClick,
-            shape = CircleShape,
-            border = BorderStroke(1.dp, Color(0xFFF59E0B)),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFF59E0B)),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            modifier = Modifier.height(36.dp)
-        ) {
-            Text(stringResource(R.string.tada_home_patch_action), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
+            Spacer(modifier = Modifier.height(12.dp))
+            androidx.compose.material3.Button(
+                onClick = {
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    onClick()
+                },
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFFE8930C)),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                modifier = Modifier.height(32.dp).fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.patch), color = Color.White, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }

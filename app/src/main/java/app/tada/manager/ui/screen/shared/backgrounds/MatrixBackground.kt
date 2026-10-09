@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
-import app.tada.manager.ui.theme.TadaBrandPurple
+import app.tada.manager.ui.theme.TadaBrandAmber
 import app.tada.manager.ui.theme.TadaBrandAmber
 import app.tada.manager.ui.theme.isDarkTheme
 import kotlinx.coroutines.launch
@@ -386,7 +386,7 @@ private class ColumnTints(columnCount: Int, isDarkTheme: Boolean) {
         for (index in 0 until columnCount) {
             val position = if (columnCount == 1) 0f else index.toFloat() / (columnCount - 1)
             // The brand gradient, read left to right across the screen the way the wordmark reads
-            val brand = TadaBrandPurple.blendTowards(TadaBrandAmber, position)
+            val brand = TadaBrandAmber.blendTowards(TadaBrandAmber, position)
             // The brand blue is too light to read as code on a light background
             val trailColor = if (isDarkTheme) brand else brand.blendTowards(Color.Black, 0.3f)
 
