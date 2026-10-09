@@ -261,6 +261,9 @@ fun HomeScreen(
     }
 
     // Main content with pull-to-refresh
+    val sources by homeViewModel.patchBundleRepository.sources.collectAsStateWithLifecycle(emptyList())
+    val patchVersion = sources.firstOrNull { it.enabled }?.version ?: "1.0.0"
+    
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
@@ -272,6 +275,7 @@ fun HomeScreen(
                 .statusBarsPadding()
         ) {
             SectionsLayout(
+                patchVersion = patchVersion,
                 notifications = HomeNotificationsUi(
                     managerUpdate = AlertState(hasManagerUpdate) { showUpdateDetailsDialog.value = true },
                     outdatedManager = AlertState(hasOutdatedManagerSources) { homeViewModel.showBundleManagementSheet = true },

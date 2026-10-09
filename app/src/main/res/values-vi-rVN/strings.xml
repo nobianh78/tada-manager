@@ -1387,4 +1387,11 @@ Chi tiết: %2$s"</string>
     <string name="tour_prompt_confirm">Cho tôi xem</string>
     <string name="onboarding_restart_title">Khám phá tính năng</string>
     <string name="onboarding_restart_desc">Chuyến tham quan có hướng dẫn về các tính năng chính</string>
+
+    <string name="chat_typing">đang nhập…</string>
+    <string name="chat_patching_start">Chào ông! Tui đang vá %1$s nè 🛠️</string>
+    <string name="chat_patching_25">Tải file gốc xong rồi, giờ đắp patch vô…</string>
+    <string name="chat_patching_55">Xong %1$d/%2$d patch rồi đó, ráng xíu nữa!</string>
+    <string name="chat_patching_85">Sắp xong rồi, đang đóng gói lại…</string>
+
 </resources>

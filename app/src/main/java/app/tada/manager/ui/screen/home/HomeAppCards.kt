@@ -5,6 +5,8 @@
 
 package app.tada.manager.ui.screen.home
 
+import app.tada.manager.util.AppDataSource
+
 import android.content.pm.PackageInfo
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
@@ -13,6 +15,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
@@ -766,6 +772,84 @@ fun AppLoadingCard(
                     baseColor = skeletonColor.copy(alpha = 0.15f)
                 )
             }
+        }
+    }
+}
+
+@Composable
+internal fun CompactAppCard(
+    item: HomeAppItem,
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
+) {
+    val installedApp = item.installedApp
+    val version = remember(item) { item.version.withVersionPrefix() }
+    val subtitle = remember(item) {
+        listOfNotNull(item.nameSuffix, version.ifEmpty { null }).joinToString(" • ")
+    }
+    
+    val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val view = LocalView.current
+    val longClickLabel = stringResource(R.string.accessibility_select_app).takeIf { onLongClick != null }
+    val isNotPatched = installedApp == null
+    
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .combinedClickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    onClick()
+                },
+                onLongClickLabel = longClickLabel,
+                onLongClick = if (onLongClick != null) {
+                    {
+                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                        onLongClick()
+                    }
+                } else null
+            ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AppIcon(
+            packageInfo = item.packageInfo,
+            packageName = installedApp?.currentPackageName ?: item.packageName,
+            contentDescription = null,
+            modifier = Modifier.size(48.dp).clip(CircleShape),
+            preferredSource = if (installedApp != null) AppDataSource.INSTALLED else AppDataSource.PATCHED_APK,
+            placeholderGradientColors = item.gradientColors
+        )
+        Spacer(Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = item.displayName,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = if (isNotPatched) stringResource(R.string.home_not_patched_yet) else subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        OutlinedButton(
+            onClick = onClick,
+            shape = CircleShape,
+            border = BorderStroke(1.dp, Color(0xFFF59E0B)),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFF59E0B)),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.height(36.dp)
+        ) {
+            Text("Vá", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
         }
     }
 }

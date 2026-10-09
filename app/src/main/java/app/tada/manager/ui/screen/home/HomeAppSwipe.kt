@@ -377,18 +377,23 @@ internal fun DynamicAppCard(
                 // The drag handle already sits in the corner the check badge would land in
                 showCheckmark = dragHandleModifier == null
             ) {
-                HomeAppCard(
+                Column {
+                CompactAppCard(
                     item = item,
                     onClick = onAppClick,
-                    // The drag handle takes the end of the card over while reordering
-                    showStatusBadges = dragHandleModifier == null,
                     onLongClick = {
                         view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                         onLongPress()
                     }
                 )
+                androidx.compose.material3.HorizontalDivider(
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
         }
+    }
 
         if (dragHandleModifier != null) {
             Box(
@@ -466,10 +471,17 @@ internal fun HiddenSearchAppCard(
                 )
             }
         ) {
-            HomeAppCard(
-                item = item,
-                onClick = onAppClick
-            )
+            Column {
+                CompactAppCard(
+                    item = item,
+                    onClick = onAppClick
+                )
+                androidx.compose.material3.HorizontalDivider(
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
         }
     }
 }

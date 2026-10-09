@@ -1,421 +1,263 @@
-/*
- * Copyright 2026 Morphe.
- * https://github.com/MorpheApp/morphe-manager
- */
-
 package app.tada.manager.ui.screen.patcher
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
+import android.content.pm.PackageInfo
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.tada.manager.R
 import app.tada.manager.ui.model.PatchProgressSource
 import app.tada.manager.ui.model.State
-import app.tada.manager.ui.screen.shared.*
-import app.tada.manager.ui.viewmodel.HomeAndPatcherMessages
+import app.tada.manager.ui.screen.shared.rememberAccessibilityEnabled
 import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.seconds
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-private val ProgressRingWavelength = 40.dp
+data class ChatMessage(val id: Int, val text: String, val timestamp: Long = System.currentTimeMillis())
 
-/** The ring runs for minutes here, so its wave stays low enough not to tire the eye. */
-private const val PROGRESS_RING_AMPLITUDE = 0.6f
-
-/**
- * Simple mode patching screen.
- *
- * Shows an Animated message, circular progress indicator with percentage and patch count, and
- * progress message.
- */
 @Composable
 fun SimplePatchingInProgress(
     progress: () -> Float,
     patchesProgress: Pair<Int, Int>,
     patchProgress: PatchProgressSource,
-    packageName: String? = null,
-    showLongStepWarning: Boolean = false,
-    queueHeader: (@Composable () -> Unit)? = null,
-    onCancelClick: () -> Unit
-) {
-    val windowSize = rememberWindowSize()
-    val (completed, total) = patchesProgress
-    val accentColor = packageName?.let { rememberAppColor(it) }
-    val context = LocalContext.current
-
-    val currentMessage = remember {
-        mutableIntStateOf(
-            HomeAndPatcherMessages.getPatcherMessage(context)
-        )
-    }
-
-    // Rotate messages every 10 seconds
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(10.seconds)
-            currentMessage.intValue = HomeAndPatcherMessages.getPatcherMessage(context)
-        }
-    }
-
-    // Main content area
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .navigationBarsPadding()
-    ) {
-        // Content with weight to push bottom bar down
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            AdaptiveProgressContent(
-                windowSize = windowSize,
-                currentMessage = currentMessage.intValue,
-                progress = progress,
-                completed = completed,
-                total = total,
-                accentColor = accentColor,
-                showLongStepWarning = showLongStepWarning,
-                patchProgress = patchProgress,
-                queueHeader = queueHeader,
-                onCancelClick = onCancelClick
-            )
-        }
-
-        // Bottom action bar
-        if (!isLandscape()) {
-            PatcherBottomActionBar(
-                showHomeButton = false,
-                onCancelClick = onCancelClick
-            )
-        }
-    }
-}
-
-/**
- * Adaptive content layout for patching progress.
- */
-@Composable
-private fun AdaptiveProgressContent(
-    windowSize: WindowSize,
-    currentMessage: Int,
-    progress: () -> Float,
-    completed: Int,
-    total: Int,
-    accentColor: Color?,
+    packageName: String?,
     showLongStepWarning: Boolean,
-    patchProgress: PatchProgressSource,
-    queueHeader: (@Composable () -> Unit)? = null,
-    onCancelClick: () -> Unit
+    onCancelClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    queueHeader: (@Composable () -> Unit)? = null
 ) {
-    val contentPadding = windowSize.contentPadding
-    val itemSpacing = windowSize.itemSpacing
-    val useTwoColumns = isLandscape()
+    val completedPatches = patchesProgress.first
+    val totalPatches = patchesProgress.second
+    
+    val currentStep by remember(patchProgress) { derivedStateOf { patchProgress.steps.firstOrNull { it.state == State.RUNNING }?.name ?: "" } }
+    
+    val messages = remember { mutableStateListOf<ChatMessage>() }
+    var isTyping by remember { mutableStateOf(true) }
+    var nextMessageId by remember { mutableStateOf(0) }
+    
+    val reduceMotion = rememberAccessibilityEnabled()
+    
+    val context = LocalContext.current
+    val pm = context.packageManager
+    
+    val appName = try {
+        if (packageName != null) {
+            pm.getApplicationInfo(packageName, 0).loadLabel(pm).toString()
+        } else {
+            "App"
+        }
+    } catch (e: Exception) {
+        "App"
+    }
 
-    if (useTwoColumns) {
-        // Two-column layout for landscape
+    // Initial message
+    LaunchedEffect(Unit) {
+        delay(1000)
+        messages.add(ChatMessage(nextMessageId++, context.getString(R.string.chat_patching_start, appName)))
+        isTyping = false
+    }
+
+    var trigger25 by remember { mutableStateOf(false) }
+    var trigger55 by remember { mutableStateOf(false) }
+    var trigger85 by remember { mutableStateOf(false) }
+
+    LaunchedEffect(progress()) {
+        val currentProgress = progress()
+        if (currentProgress >= 0.25f && !trigger25) {
+            trigger25 = true
+            isTyping = true
+            delay(1500)
+            messages.add(ChatMessage(nextMessageId++, context.getString(R.string.chat_patching_25)))
+            isTyping = false
+        }
+        if (currentProgress >= 0.55f && !trigger55) {
+            trigger55 = true
+            isTyping = true
+            delay(1500)
+            messages.add(ChatMessage(nextMessageId++, context.getString(R.string.chat_patching_55, completedPatches, totalPatches)))
+            isTyping = false
+        }
+        if (currentProgress >= 0.85f && !trigger85) {
+            trigger85 = true
+            isTyping = true
+            delay(1500)
+            messages.add(ChatMessage(nextMessageId++, context.getString(R.string.chat_patching_85)))
+            isTyping = false
+        }
+    }
+
+    Column(modifier = modifier.fillMaxSize().navigationBarsPadding()) {
+        queueHeader?.invoke()
+        
+        // Header
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = contentPadding),
-            horizontalArrangement = Arrangement.spacedBy(itemSpacing * 3),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left column: Message, details + action bar
-            Column(
-                modifier = Modifier
-                    .weight(0.5f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                queueHeader?.invoke()
+            Image(
+                painter = painterResource(R.drawable.tada_mascot),
+                contentDescription = "Mascot",
+                modifier = Modifier.size(52.dp).clip(CircleShape)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text("TADa", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(currentStep, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+            }
+        }
+        
+        // LinearProgressIndicator
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            LinearProgressIndicator(
+                progress = progress,
+                modifier = Modifier.weight(1f).height(6.dp).clip(RoundedCornerShape(3.dp)),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text("${(progress() * 100).toInt()}%", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Chat list
+        val listState = rememberLazyListState()
+        
+        // Auto-scroll to bottom
+        LaunchedEffect(messages.size, isTyping) {
+            val totalItems = messages.size + if (isTyping) 1 else 0
+            if (totalItems > 0) {
+                listState.animateScrollToItem(totalItems - 1)
+            }
+        }
 
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    ProgressMessageSection(currentMessage)
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(messages, key = { it.id }) { msg ->
+                MessageBubble(
+                    text = msg.text,
+                    timestamp = msg.timestamp,
+                    reduceMotion = reduceMotion
+                )
+            }
+            if (isTyping) {
+                item(key = "typing") {
+                    TypingBubble(reduceMotion = reduceMotion)
+                }
+            }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+        }
+        
+        // Cancel button
+        PatcherBottomActionBar(
+            horizontalPadding = 16.dp,
+            showHomeButton = false,
+            onCancelClick = onCancelClick
+        )
+    }
+}
 
-                    ProgressDetailsSection(
-                        showLongStepWarning = showLongStepWarning,
-                        patchProgress = patchProgress,
-                        windowSize = windowSize
+@Composable
+private fun TypingBubble(reduceMotion: Boolean) {
+    Row(
+        modifier = Modifier
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shape = RoundedCornerShape(topStart = 6.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 20.dp)
+            )
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (reduceMotion) {
+            Text(stringResource(R.string.chat_typing), style = MaterialTheme.typography.bodyLarge)
+        } else {
+            val infiniteTransition = rememberInfiniteTransition()
+            val offsets = List(3) { index ->
+                infiniteTransition.animateFloat(
+                    initialValue = 0f,
+                    targetValue = -8f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(300, delayMillis = index * 100, easing = LinearEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "typing_bounce"
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                offsets.forEach { offset ->
+                    Box(
+                        modifier = Modifier
+                            .offset(y = offset.value.dp)
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.onSurface)
                     )
                 }
-
-                // Action bar
-                PatcherBottomActionBar(
-                    horizontalPadding = 0.dp,
-                    showHomeButton = false,
-                    onCancelClick = onCancelClick
-                )
             }
+        }
+    }
+}
 
-            // Right column: Circular progress
+@Composable
+private fun MessageBubble(text: String, timestamp: Long, reduceMotion: Boolean) {
+    val formatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val timeString = remember(timestamp) { formatter.format(Date(timestamp)) }
+
+    var visible by remember { mutableStateOf(reduceMotion) }
+    LaunchedEffect(Unit) {
+        if (!reduceMotion) {
+            visible = true
+        }
+    }
+
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(tween(300)) + slideInVertically(tween(300), initialOffsetY = { it / 2 })
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
+        ) {
             Box(
                 modifier = Modifier
-                    .weight(0.5f)
-                    .fillMaxHeight(),
-                contentAlignment = Alignment.Center
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        shape = RoundedCornerShape(topStart = 6.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 20.dp)
+                    )
+                    .padding(16.dp)
             ) {
-                CircularProgressWithStats(
-                    progress = progress,
-                    completed = completed,
-                    total = total,
-                    accentColor = accentColor,
-                    modifier = Modifier.size(280.dp)
-                )
+                Text(text = text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
             }
-        }
-    } else {
-        // Single-column layout for compact windows (portrait)
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = contentPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(itemSpacing * 3)
-        ) {
-            queueHeader?.invoke()
-
-            ProgressMessageSection(currentMessage)
-
-            CircularProgressWithStats(
-                progress = progress,
-                completed = completed,
-                total = total,
-                accentColor = accentColor,
-                modifier = Modifier.size(280.dp)
-            )
-
-            ProgressDetailsSection(
-                showLongStepWarning = showLongStepWarning,
-                patchProgress = patchProgress,
-                windowSize = windowSize
-            )
-        }
-    }
-}
-
-/**
- * Progress message section.
- */
-@Composable
-private fun ProgressMessageSection(currentMessage: Int) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        AnimatedMessage(currentMessage)
-    }
-}
-
-/**
- * Progress details section.
- */
-@Composable
-private fun ProgressDetailsSection(
-    showLongStepWarning: Boolean,
-    patchProgress: PatchProgressSource,
-    windowSize: WindowSize
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(windowSize.itemSpacing)
-    ) {
-        // Long step warning
-        AnimatedVisibility(
-            visible = showLongStepWarning,
-            enter = Animations.expandFadeEnter,
-            exit = Animations.shrinkFadeExit
-        ) {
-            Notice(
-                text = stringResource(R.string.patcher_long_step_warning),
-                tone = SemanticTone.Primary,
-                icon = Icons.Outlined.Info,
-                isCentered = true,
-                density = NoticeDensity.Compact
-            )
-        }
-
-        // Current step indicator
-        CurrentStepIndicator(
-            patchProgress = patchProgress,
-            windowSize = windowSize
-        )
-    }
-}
-
-/**
- * Animated message with fade transitions.
- */
-@Composable
-private fun AnimatedMessage(messageResId: Int) {
-    val reduceMotion = rememberAccessibilityEnabled()
-    val message = stringResource(messageResId)
-    if (reduceMotion) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 4,
-            overflow = TextOverflow.Ellipsis
-        )
-    } else {
-        AnimatedContent(
-            targetState = message,
-            transitionSpec = Animations.fadeCrossfade(1000),
-            label = "message_animation"
-        ) { rotatingMessage ->
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = rotatingMessage,
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.fillMaxWidth(),
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis
+                text = timeString,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 8.dp)
             )
-        }
-    }
-}
-
-/**
- * Wavy circular progress indicator with percentage and patch count.
- */
-@Composable
-private fun CircularProgressWithStats(
-    progress: () -> Float,
-    completed: Int,
-    total: Int,
-    accentColor: Color?,
-    modifier: Modifier = Modifier
-) {
-    // The eased progress moves every frame, so only the whole percent is read while composing
-    val percent by remember(progress) { derivedStateOf { (progress() * 100).toInt() } }
-
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-    ) {
-        WavyProgressRing(
-            progress = progress,
-            wavelength = ProgressRingWavelength,
-            accentColor = accentColor,
-            modifier = Modifier.fillMaxSize(),
-            amplitude = PROGRESS_RING_AMPLITUDE,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-
-        // Stats in center
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = stringResource(R.string.patcher_percentage, percent),
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Bold,
-                fontSize = 56.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            val totalPatchesText = pluralStringResource(
-                R.plurals.patch_count,
-                total,
-                total.toString()
-            )
-
-            Text(
-                text = stringResource(
-                    R.string.patcher_patches_progress_format,
-                    completed,
-                    totalPatchesText
-                ),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-/**
- * Current step indicator.
- */
-@Composable
-fun CurrentStepIndicator(
-    patchProgress: PatchProgressSource,
-    windowSize: WindowSize
-) {
-    // Keyed on the run: a queue swaps in a new source without leaving composition
-    val currentStep by remember(patchProgress) {
-        derivedStateOf {
-            patchProgress.steps.firstOrNull { it.state == State.RUNNING }
-        }
-    }
-    val reduceMotion = rememberAccessibilityEnabled()
-    val stepName = currentStep?.name
-    // In the app's color, as the ring above it is
-    val stepColor = LocalAccent.current ?: MaterialTheme.colorScheme.primary
-
-    val stepStyle = when (windowSize.widthSizeClass) {
-        WindowWidthSizeClass.Compact -> MaterialTheme.typography.bodyLarge
-        else -> MaterialTheme.typography.titleMedium
-    }
-
-    if (reduceMotion) {
-        // Skip crossfade so the main thread isn't busy animating when TalkBack tries to announce
-        if (stepName != null) {
-            Text(
-                text = stepName,
-                style = stepStyle,
-                color = stepColor,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    } else {
-        AnimatedContent(
-            targetState = stepName,
-            transitionSpec = Animations.fadeCrossfade(400),
-            label = "step_animation"
-        ) { name ->
-            if (name != null) {
-                Text(
-                    text = name,
-                    style = stepStyle,
-                    color = stepColor,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
         }
     }
 }

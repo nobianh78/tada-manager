@@ -16,6 +16,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -150,6 +151,7 @@ class HomeSearchState(
  */
 @Composable
 fun SectionsLayout(
+    patchVersion: String,
     notifications: HomeNotificationsUi,
     apps: HomeAppListUi,
     appActions: HomeAppActions,
@@ -239,21 +241,34 @@ fun SectionsLayout(
 
             // Section 5: Bottom action bar
             if (!isLandscape()) {
-                HomeBottomActionBar(
-                    modifier = Modifier.coveredByFooterBar(sectionState.isFooterBarVisible),
-                    onBundlesClick = chromeActions.onBundlesClick,
-                    onSettingsClick = chromeActions.onSettingsClick,
-                    isExpertModeEnabled = chromeFlags.isExpertModeEnabled,
-                    showSearchButton = chromeFlags.showSearchButton,
-                    showSortButton = chromeFlags.showSortButton,
-                    sortMode = apps.sortMode,
-                    filterMode = filterMode,
-                    searchActive = searchState.visible,
-                    onSearchClick = searchState.onToggle,
-                    onSortClick = { showListOptionsDialog = true },
-                    onSourcesPositioned = onboardingState?.let { s -> { b -> s.sourcesButtonBounds = b } },
-                    onSettingsPositioned = onboardingState?.let { s -> { b -> s.settingsButtonBounds = b } }
-                )
+                // Bottom Pill
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp, top = 8.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    androidx.compose.material3.Surface(
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(androidx.compose.ui.graphics.Color.Green, androidx.compose.foundation.shape.CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            androidx.compose.material3.Text(
+                                text = "TADa Patches v${patchVersion} • đã cập nhật",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -394,13 +409,57 @@ private fun AdaptiveContent(
                             verticalArrangement = if (isGroupedAppView) Arrangement.Top else Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            if (!greetingMessage.isNullOrEmpty()) {
-                                GreetingSection(
-                                    message = greetingMessage,
-                                    modifier = Modifier.widthIn(max = maxCardWidth).fillMaxWidth(),
-                                    onRefresh = chromeActions.onRefreshGreeting
+                            // 1. Top Row
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                if (chromeFlags.showSearchButton) {
+                                    androidx.compose.material3.IconButton(onClick = searchState.onToggle) { androidx.compose.material3.Icon(Icons.Outlined.Search, "Search") }
+                                }
+                                if (chromeFlags.showSortButton) {
+                                    androidx.compose.material3.IconButton(onClick = onSortClick) { androidx.compose.material3.Icon(Icons.Outlined.Sort, "Sort") }
+                                }
+                                androidx.compose.material3.IconButton(onClick = chromeActions.onSettingsClick) { androidx.compose.material3.Icon(Icons.Outlined.Settings, "Settings") }
+                            }
+
+                            // 2. Banner
+                            androidx.compose.material3.Card(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            androidx.compose.ui.graphics.Brush.linearGradient(
+                                                colors = listOf(androidx.compose.ui.graphics.Color(0xFFFFB74D), androidx.compose.ui.graphics.Color(0xFFF57C00))
+                                            )
+                                        )
+                                        .padding(16.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        androidx.compose.foundation.Image(
+                                            painter = androidx.compose.ui.res.painterResource(app.tada.manager.R.drawable.tada_mascot_wave),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(80.dp)
+                                        )
+                                        Spacer(Modifier.width(16.dp))
+                                        Column {
+                                            androidx.compose.material3.Text("Vá app thôi!", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = androidx.compose.ui.graphics.Color.White)
+                                            androidx.compose.material3.Text("${apps.visible.size} app sẵn sàng", color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f))
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 3. Section Title
+                            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp)) {
+                                androidx.compose.material3.Text(
+                                    text = "App của bạn",
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleMedium
                                 )
-                                Spacer(modifier = Modifier.height(itemSpacing))
                             }
                             Box(modifier = Modifier.weight(1f, fill = isGroupedAppView)) {
                                 MainAppsSection(
@@ -456,16 +515,58 @@ private fun AdaptiveContent(
             ) {
                 // Section 2: Greeting - when disabled, show a small top spacer so
                 // the app cards don't sit flush against the top of the screen
-                if (!greetingMessage.isNullOrEmpty()) {
-                    GreetingSection(
-                        message = greetingMessage,
-                        modifier = Modifier.padding(horizontal = contentPadding),
-                        onRefresh = chromeActions.onRefreshGreeting
-                    )
-                    Spacer(modifier = Modifier.height(itemSpacing))
-                } else if (isGroupedAppView) {
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
+                // 1. Top Row
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                if (chromeFlags.showSearchButton) {
+                                    androidx.compose.material3.IconButton(onClick = searchState.onToggle) { androidx.compose.material3.Icon(Icons.Outlined.Search, "Search") }
+                                }
+                                if (chromeFlags.showSortButton) {
+                                    androidx.compose.material3.IconButton(onClick = onSortClick) { androidx.compose.material3.Icon(Icons.Outlined.Sort, "Sort") }
+                                }
+                                androidx.compose.material3.IconButton(onClick = chromeActions.onSettingsClick) { androidx.compose.material3.Icon(Icons.Outlined.Settings, "Settings") }
+                            }
+
+                            // 2. Banner
+                            androidx.compose.material3.Card(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            androidx.compose.ui.graphics.Brush.linearGradient(
+                                                colors = listOf(androidx.compose.ui.graphics.Color(0xFFFFB74D), androidx.compose.ui.graphics.Color(0xFFF57C00))
+                                            )
+                                        )
+                                        .padding(16.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        androidx.compose.foundation.Image(
+                                            painter = androidx.compose.ui.res.painterResource(app.tada.manager.R.drawable.tada_mascot_wave),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(80.dp)
+                                        )
+                                        Spacer(Modifier.width(16.dp))
+                                        Column {
+                                            androidx.compose.material3.Text("Vá app thôi!", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = androidx.compose.ui.graphics.Color.White)
+                                            androidx.compose.material3.Text("${apps.visible.size} app sẵn sàng", color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f))
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 3. Section Title
+                            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp)) {
+                                androidx.compose.material3.Text(
+                                    text = "App của bạn",
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
 
                 // Section 3: Scrollable app buttons
                 Box(modifier = Modifier.weight(1f, fill = isGroupedAppView)) {

@@ -1477,4 +1477,11 @@ Do you still want to continue?"</string>
     <string name="tour_prompt_confirm">Show me around</string>
     <string name="onboarding_restart_title">Feature tour</string>
     <string name="onboarding_restart_desc">A guided tour of key features</string>
+
+    <string name="chat_typing">typing…</string>
+    <string name="chat_patching_start">Hi there! I am patching %1$s for you 🛠️</string>
+    <string name="chat_patching_25">Original file downloaded, now applying patches…</string>
+    <string name="chat_patching_55">Finished %1$d/%2$d patches, almost there!</string>
+    <string name="chat_patching_85">Almost done, packaging everything up…</string>
+
 </resources>
