@@ -1,0 +1,39 @@
+/*
+ * Copyright 2026 Morphe.
+ * https://github.com/MorpheApp/morphe-manager
+ */
+
+package app.tada.manager.ui.screen.shared
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.graphics.Color
+import app.tada.manager.util.ensureContrast
+
+/**
+ * What the card in this subtree is filled with.
+ *
+ * Cards colored from an app's own icon can land on any hue, so a fill taken from the palette has
+ * no way of staying clear of them on its own.
+ */
+val LocalCardBackground = compositionLocalOf<Color?> { null }
+
+/**
+ * Color of the app or source the surface in this subtree stands for: a card, a dialog or its
+ * header. The controls on it take it on by default, so they read as part of that surface rather
+ * than of the theme around it. Null for a surface in the theme's palette.
+ *
+ * Already made usable, see [usableAppAccent], by whatever provides it through [ProvideAccent] or
+ * [ProvideCardAccent].
+ */
+val LocalAccent = compositionLocalOf<Color?> { null }
+
+/** How far a fill is pushed off a card it would otherwise match. */
+private const val CardSeparation = 0.15f
+
+/** This color, moved off [LocalCardBackground] when the two are too close to tell apart. */
+@Composable
+fun Color.distinctFromCard(): Color {
+    val card = LocalCardBackground.current ?: return this
+    return ensureContrast(card, CardSeparation)
+}

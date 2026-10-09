@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Original TADa notification mark: white "T" with an error badge. -->
+<!--
+    Badge: https://github.com/google/material-design-icons/blob/master/src/alert/error/materialicons/24px.svg
+
+    Copyright 2022 Google
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Paths must be white to ensure the icon appears white in the expanded status bar panel. -->
+    <group>
+        <!-- The circle winds against the frame, cutting a gap around the badge out of the mark -->
+        <clip-path
+            android:pathData="M0,0H24V24H0Z M11.75,18.5 a6.75,6.75 0 1,0 13.5,0 a6.75,6.75 0 1,0 -13.5,0 Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M5,5 h14 v4.5 h-14 z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M10.75,9.5 h2.5 v10 h-2.5 z" />
+    </group>
+
+    <group
+        android:scaleX="0.55"
+        android:scaleY="0.55"
+        android:translateX="11.9"
+        android:translateY="11.9">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM13,17h-2v-2h2v2zM13,13h-2L11,7h2v6z" />
+    </group>
+</vector>

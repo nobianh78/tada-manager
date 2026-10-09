@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="patch_count">
+        <item quantity="one">%s টি প্যাচ</item>
+        <item quantity="other">%s টি প্যাচ</item>
+    </plurals>
+    <plurals name="option_count">
+        <item quantity="one">%s টি প্যাচ অপশন</item>
+        <item quantity="other">%s টি প্যাচ অপশন</item>
+    </plurals>
+    <!-- How many files and folders a folder holds, under its name in the file picker -->
+    <plurals name="file_picker_item_count">
+        <item quantity="one">%sটি আইটেম</item>
+        <item quantity="other">%sটি আইটেম</item>
+    </plurals>
+    <!-- Button that confirms the files checked in the file picker -->
+    <plurals name="file_picker_select_count">
+        <item quantity="one">%sটি ফাইল নির্বাচন করুন</item>
+        <item quantity="other">%sটি ফাইল নির্বাচন করুন</item>
+    </plurals>
+    <!-- Button that adds every source waiting in the add source dialog -->
+    <plurals name="sources_dialog_add_count">
+        <item quantity="one">%sটি উৎস যোগ করুন</item>
+        <item quantity="other">%sটি উৎস যোগ করুন</item>
+    </plurals>
+    <plurals name="home_app_patch_sources_title">
+        <item quantity="one">%sটি অ্যাপের জন্য প্যাচ সোর্স</item>
+        <item quantity="other">%sটি অ্যাপের জন্য প্যাচ সোর্স</item>
+    </plurals>
+    <plurals name="expert_mode_hidden_sources_notice">
+        <item quantity="one">%sটি সোর্স লুকানো। দেখানোর জন্য আলতো চাপুন</item>
+        <item quantity="other">%sটি সোর্স লুকানো। দেখানোর জন্য আলতো চাপুন</item>
+    </plurals>
+    <plurals name="sources_search_patch_matches">
+        <item quantity="one">%sটি ম্যাচিং প্যাচ</item>
+        <item quantity="other">%sটি ম্যাচিং প্যাচ</item>
+    </plurals>
+    <plurals name="source_count">
+        <item quantity="one">%s উৎস</item>
+        <item quantity="other">%s টি সোর্স</item>
+    </plurals>
+    <plurals name="package_count">
+        <item quantity="one">%s প্যাকেজ</item>
+        <item quantity="other">%s টি প্যাকেজ</item>
+    </plurals>
+    <plurals name="patches_executed">
+        <item quantity="one">%s টি প্যাচ প্রয়োগ করুন</item>
+        <item quantity="other">%s টি প্যাচ প্রয়োগ করুন</item>
+    </plurals>
+    <plurals name="settings_system_apks_count">
+        <item quantity="one">%s টি APK ফাইল</item>
+        <item quantity="other">%s টি APK ফাইল</item>
+    </plurals>
+    <plurals name="batch_install_summary">
+        <item quantity="one">%s অ্যাপ ইনস্টল করা হয়েছে</item>
+        <item quantity="other">%s অ্যাপ ইনস্টল করা হয়েছে</item>
+    </plurals>
+    <plurals name="batch_reinstall_summary">
+        <item quantity="one">%s অ্যাপ পুনরায় ইনস্টল করা হয়েছে</item>
+        <item quantity="other">%s অ্যাপ পুনরায় ইনস্টল করা হয়েছে</item>
+    </plurals>
+    <plurals name="batch_uninstall_summary">
+        <item quantity="one">%s অ্যাপ আনইনস্টল করা হয়েছে</item>
+        <item quantity="other">%s অ্যাপ আনইনস্টল করা হয়েছে</item>
+    </plurals>
+    <plurals name="batch_uninstall_confirm_title">
+        <item quantity="one">%s অ্যাপ আনইনস্টল করবেন?</item>
+        <item quantity="other">%s অ্যাপ আনইনস্টল করবেন?</item>
+    </plurals>
+    <plurals name="batch_patch_ready_count">
+        <item quantity="one">%s অ্যাপ প্যাচ করার জন্য প্রস্তুত</item>
+        <item quantity="other">%s অ্যাপ প্যাচ করার জন্য প্রস্তুত</item>
+    </plurals>
+    <plurals name="repatch_available_count">
+        <item quantity="one">%s অ্যাপ পুনরায় প্যাচ করা যাবে</item>
+        <item quantity="other">%s অ্যাপগুলো পুনরায় প্যাচ করা যাবে</item>
+    </plurals>
+    <plurals name="batch_skipped_summary">
+        <item quantity="one">%s অ্যাপ বাদ দেওয়া হয়েছে</item>
+        <item quantity="other">%s অ্যাপ বাদ দেওয়া হয়েছে</item>
+    </plurals>
+    <plurals name="home_app_info_repatch_cleaned_invalid_data">
+        <item quantity="one">সেভ করা নির্বাচনের থেকে %s টি পুরানো প্যাচ সরিয়ে দেওয়া হয়েছে</item>
+        <item quantity="other">সেভ করা নির্বাচনের থেকে %s টি পুরানো প্যাচ সরিয়ে দেওয়া হয়েছে</item>
+    </plurals>
+    <plurals name="sources_management_subtitle">
+        <item quantity="one">%s টি সোর্স ইনস্টল রয়েছে</item>
+        <item quantity="other">%s টি সোর্স ইনস্টল রয়েছে</item>
+    </plurals>
+    <plurals name="home_app_show_hidden_count">
+        <item quantity="one">%s লুকানো অ্যাপ্লিকেশন</item>
+        <item quantity="other">%s লুকানো অ্যাপ্লিকেশনগুলি</item>
+    </plurals>
+    <plurals name="home_category_app_count">
+        <item quantity="one">%s টি অ্যাপ</item>
+        <item quantity="other">%s টি অ্যাপস</item>
+    </plurals>
+    <plurals name="expert_mode_selected_count">
+        <item quantity="one">%sটি নির্বাচিত</item>
+        <item quantity="other">%sটি নির্বাচিত</item>
+    </plurals>
+    <plurals name="expert_mode_copy_from_bundle_done">
+        <item quantity="one">নির্বাচিত বান্ডেল থেকে %s প্যাচ কপি করা হয়েছে</item>
+        <item quantity="other">নির্বাচিত বান্ডেল থেকে %s প্যাচ কপি করা হয়েছে</item>
+    </plurals>
+    <plurals name="core_count">
+        <item quantity="one">%s কোর</item>
+        <item quantity="other">%s কোর</item>
+    </plurals>
+    <plurals name="changelog_feature_count">
+        <item quantity="one">%sটি বৈশিষ্ট্য</item>
+        <item quantity="other">%sটি বৈশিষ্ট্য</item>
+    </plurals>
+    <plurals name="changelog_fix_count">
+        <item quantity="one">%sটি ফিক্স</item>
+        <item quantity="other">%sটি ফিক্স</item>
+    </plurals>
+    <plurals name="changelog_performance_count">
+        <item quantity="one">%sটি অপ্টিমাইজেশন</item>
+        <item quantity="other">%sটি অপ্টিমাইজেশন</item>
+    </plurals>
+    <plurals name="changelog_change_count">
+        <item quantity="one">%sটি পরিবর্তন</item>
+        <item quantity="other">%sটি পরিবর্তন</item>
+    </plurals>
+    <plurals name="changelog_new_releases">
+        <item quantity="one">%sটি নতুন রিলিজ</item>
+        <item quantity="other">%sটি নতুন রিলিজ</item>
+    </plurals>
+    <plurals name="app_links_count_enabled">
+        <item quantity="one">%dটি লিংক সক্রিয়</item>
+        <item quantity="other">%dটি লিংক সক্রিয়</item>
+    </plurals>
+    <plurals name="app_links_count_unverified">
+        <item quantity="one">%dটি অযাচাইকৃত লিংক</item>
+        <item quantity="other">%dটি অযাচাইকৃত লিংক</item>
+    </plurals>
+</resources>

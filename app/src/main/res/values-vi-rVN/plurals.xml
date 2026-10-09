@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="patch_count">
+        <item quantity="other">%s bản vá</item>
+    </plurals>
+    <plurals name="option_count">
+        <item quantity="other">%s tùy chỉnh bản vá</item>
+    </plurals>
+    <!-- How many files and folders a folder holds, under its name in the file picker -->
+    <plurals name="file_picker_item_count">
+        <item quantity="other">%s mục</item>
+    </plurals>
+    <!-- Button that confirms the files checked in the file picker -->
+    <plurals name="file_picker_select_count">
+        <item quantity="other">Chọn %s tệp</item>
+    </plurals>
+    <!-- Button that adds every source waiting in the add source dialog -->
+    <plurals name="sources_dialog_add_count">
+        <item quantity="other">Thêm %s nguồn</item>
+    </plurals>
+    <plurals name="home_app_patch_sources_title">
+        <item quantity="other">Nguồn vá cho %s ứng dụng</item>
+    </plurals>
+    <plurals name="expert_mode_hidden_sources_notice">
+        <item quantity="other">%s nguồn bị ẩn. Nhấn để hiển thị</item>
+    </plurals>
+    <plurals name="sources_search_patch_matches">
+        <item quantity="other">%s bản vá phù hợp</item>
+    </plurals>
+    <plurals name="source_count">
+        <item quantity="other">%s nguồn</item>
+    </plurals>
+    <plurals name="package_count">
+        <item quantity="other">%s gói</item>
+    </plurals>
+    <plurals name="patches_executed">
+        <item quantity="other">Thực thi %s bản vá</item>
+    </plurals>
+    <plurals name="settings_system_apks_count">
+        <item quantity="other">%s tệp APK</item>
+    </plurals>
+    <plurals name="batch_install_summary">
+        <item quantity="other">Đã cài đặt %s ứng dụng</item>
+    </plurals>
+    <plurals name="batch_reinstall_summary">
+        <item quantity="other">Đã cài đặt lại %s ứng dụng</item>
+    </plurals>
+    <plurals name="batch_uninstall_summary">
+        <item quantity="other">Đã gỡ cài đặt %s ứng dụng</item>
+    </plurals>
+    <plurals name="batch_uninstall_confirm_title">
+        <item quantity="other">Gỡ cài đặt %s ứng dụng?</item>
+    </plurals>
+    <plurals name="batch_patch_ready_count">
+        <item quantity="other">%s ứng dụng sẵn sàng để vá</item>
+    </plurals>
+    <plurals name="repatch_available_count">
+        <item quantity="other">%s ứng dụng có thể được vá lại</item>
+    </plurals>
+    <plurals name="batch_skipped_summary">
+        <item quantity="other">Đã bỏ qua %s ứng dụng</item>
+    </plurals>
+    <plurals name="home_app_info_repatch_cleaned_invalid_data">
+        <item quantity="other">Đã loại bỏ %s bản vá lỗi thời khỏi danh sách bản vá đã lưu</item>
+    </plurals>
+    <plurals name="sources_management_subtitle">
+        <item quantity="other">Đã cài đặt %s nguồn</item>
+    </plurals>
+    <plurals name="home_app_show_hidden_count">
+        <item quantity="other">%s ứng dụng đang ẩn</item>
+    </plurals>
+    <plurals name="home_category_app_count">
+        <item quantity="other">%s ứng dụng</item>
+    </plurals>
+    <plurals name="expert_mode_selected_count">
+        <item quantity="other">%s đã chọn</item>
+    </plurals>
+    <plurals name="expert_mode_copy_from_bundle_done">
+        <item quantity="other">Đã sao chép %s bản vá từ gói được chọn</item>
+    </plurals>
+    <plurals name="core_count">
+        <item quantity="other">%s lõi</item>
+    </plurals>
+    <plurals name="changelog_feature_count">
+        <item quantity="other">%s tính năng</item>
+    </plurals>
+    <plurals name="changelog_fix_count">
+        <item quantity="other">%s bản sửa lỗi</item>
+    </plurals>
+    <plurals name="changelog_performance_count">
+        <item quantity="other">%s tối ưu hóa</item>
+    </plurals>
+    <plurals name="changelog_change_count">
+        <item quantity="other">%s thay đổi</item>
+    </plurals>
+    <plurals name="changelog_new_releases">
+        <item quantity="other">%s bản phát hành mới</item>
+    </plurals>
+    <plurals name="app_links_count_enabled">
+        <item quantity="other">Đã bật %d liên kết</item>
+    </plurals>
+    <plurals name="app_links_count_unverified">
+        <item quantity="other">%d liên kết chưa xác minh</item>
+    </plurals>
+</resources>

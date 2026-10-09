@@ -1,0 +1,65 @@
+package app.tada.manager.patcher.runtime
+
+import android.content.Context
+import app.tada.manager.data.platform.Filesystem
+import app.tada.manager.domain.manager.PreferencesManager
+import app.tada.manager.domain.repository.PatchBundleRepository
+import app.tada.manager.patcher.logger.Logger
+import app.tada.manager.patcher.worker.ProgressEventHandler
+import app.tada.manager.util.Options
+import app.tada.manager.util.PatchSelection
+import app.tada.manager.util.bytesToMebibytes
+import kotlinx.coroutines.flow.first
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import java.io.File
+
+/** The heap limit ART granted the calling process, in mebibytes. */
+fun heapLimitMebibytes() = bytesToMebibytes(java.lang.Runtime.getRuntime().maxMemory()).toInt()
+
+sealed class Runtime(context: Context) : KoinComponent {
+    private val fs: Filesystem by inject()
+    private val patchBundlesRepo: PatchBundleRepository by inject()
+    protected val prefs: PreferencesManager by inject()
+
+    protected val cacheDir: String = fs.tempDir.absolutePath
+    protected val frameworkPath: String =
+        context.cacheDir.resolve("framework").also { it.mkdirs() }.absolutePath
+
+    protected suspend fun bundles() = patchBundlesRepo.bundles.first()
+
+    /** Only of use to a runtime that reads bundles in this process, see [CoroutineRuntime]. */
+    protected val bundleLoadGuard get() = patchBundlesRepo.loadGuard
+
+    /**
+     * Patches [inputFile] into [outputFile].
+     *
+     * @param inputFile        Path of the APK or split archive to patch.
+     * @param outputFile       Path the patched APK is written to.
+     * @param packageName      Package of the app being patched.
+     * @param selectedPatches  Patches to apply, per bundle.
+     * @param options          Patch option values, per bundle.
+     * @param logger           Sink for everything the run reports.
+     * @param onPatchCompleted Called with the name of each patch that finished.
+     * @param onProgress       Called as the run moves between steps.
+     * @param stripUnusedNativeLibs Whether native libraries and split configurations the device
+     *                         cannot use are dropped.
+     * @param onMergedApkReady Called with the merged APK when a split archive patched successfully.
+     *                         The runtime has no further use for the file, so it may be moved.
+     * @param onRestart        Called when the current attempt is abandoned and patching starts over,
+     *                         so progress reported so far can be dropped instead of accumulating.
+     */
+    abstract suspend fun execute(
+        inputFile: String,
+        outputFile: String,
+        packageName: String,
+        selectedPatches: PatchSelection,
+        options: Options,
+        logger: Logger,
+        onPatchCompleted: suspend (String) -> Unit,
+        onProgress: ProgressEventHandler,
+        stripUnusedNativeLibs: Boolean,
+        onMergedApkReady: (suspend (File) -> Unit)? = null,
+        onRestart: suspend () -> Unit = {},
+    )
+}

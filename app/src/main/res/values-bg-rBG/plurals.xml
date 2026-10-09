@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="patch_count">
+        <item quantity="one">%s пач</item>
+        <item quantity="other">%s пачове</item>
+    </plurals>
+    <plurals name="option_count">
+        <item quantity="one">%s пач опция</item>
+        <item quantity="other">%s пач опции</item>
+    </plurals>
+    <!-- How many files and folders a folder holds, under its name in the file picker -->
+    <plurals name="file_picker_item_count">
+        <item quantity="one">%s елемент</item>
+        <item quantity="other">%s елемента</item>
+    </plurals>
+    <!-- Button that confirms the files checked in the file picker -->
+    <plurals name="file_picker_select_count">
+        <item quantity="one">Изберете %s файл</item>
+        <item quantity="other">Изберете %s файла</item>
+    </plurals>
+    <!-- Button that adds every source waiting in the add source dialog -->
+    <plurals name="sources_dialog_add_count">
+        <item quantity="one">Добавете %s източник</item>
+        <item quantity="other">Добавете %s източника</item>
+    </plurals>
+    <plurals name="home_app_patch_sources_title">
+        <item quantity="one">Източници на кръпки за %s приложение</item>
+        <item quantity="other">Източници на кръпки за %s приложения</item>
+    </plurals>
+    <plurals name="expert_mode_hidden_sources_notice">
+        <item quantity="one">%s източник е скрит. Докоснете, за да се покаже</item>
+        <item quantity="other">%s източника са скрити. Докоснете, за да се покажат</item>
+    </plurals>
+    <plurals name="sources_search_patch_matches">
+        <item quantity="one">%s съвпадаща кръпка</item>
+        <item quantity="other">%s съвпадащи кръпки</item>
+    </plurals>
+    <plurals name="source_count">
+        <item quantity="one">%s източник</item>
+        <item quantity="other">%s източници</item>
+    </plurals>
+    <plurals name="package_count">
+        <item quantity="one">%s пакет</item>
+        <item quantity="other">%s пакети</item>
+    </plurals>
+    <plurals name="patches_executed">
+        <item quantity="one">Изпълнен %s пач</item>
+        <item quantity="other">Изпълнени %s пачове</item>
+    </plurals>
+    <plurals name="settings_system_apks_count">
+        <item quantity="one">%s APK файл</item>
+        <item quantity="other">%s APK файлове</item>
+    </plurals>
+    <plurals name="batch_install_summary">
+        <item quantity="one">Инсталирано %s приложение</item>
+        <item quantity="other">Инсталирани %s приложения</item>
+    </plurals>
+    <plurals name="batch_reinstall_summary">
+        <item quantity="one">Преинсталирано %s приложение</item>
+        <item quantity="other">Преинсталирани %s приложения</item>
+    </plurals>
+    <plurals name="batch_uninstall_summary">
+        <item quantity="one">Деинсталирано %s приложение</item>
+        <item quantity="other">Деинсталирани %s приложения</item>
+    </plurals>
+    <plurals name="batch_uninstall_confirm_title">
+        <item quantity="one">Деинсталиране на %s приложение?</item>
+        <item quantity="other">Деинсталиране на %s приложения?</item>
+    </plurals>
+    <plurals name="batch_patch_ready_count">
+        <item quantity="one">%s приложение е готово за поправяне</item>
+        <item quantity="other">%s приложения са готови за поправяне</item>
+    </plurals>
+    <plurals name="repatch_available_count">
+        <item quantity="one">%s приложение може да бъде повторно пачвано</item>
+        <item quantity="other">%s приложения могат да бъдат повторно пачвани</item>
+    </plurals>
+    <plurals name="batch_skipped_summary">
+        <item quantity="one">Пропуснато %s приложение</item>
+        <item quantity="other">Пропуснати %s приложения</item>
+    </plurals>
+    <plurals name="home_app_info_repatch_cleaned_invalid_data">
+        <item quantity="one">Изтрит %s излишен пач от запазения избор</item>
+        <item quantity="other">Изтрит %s излишни пачове от запазения избор</item>
+    </plurals>
+    <plurals name="sources_management_subtitle">
+        <item quantity="one">%s инсталиран източник</item>
+        <item quantity="other">%s инсталирани източници</item>
+    </plurals>
+    <plurals name="home_app_show_hidden_count">
+        <item quantity="one">%s скрито приложение</item>
+        <item quantity="other">%s скрити приложения</item>
+    </plurals>
+    <plurals name="home_category_app_count">
+        <item quantity="one">%s приложение</item>
+        <item quantity="other">%s приложения</item>
+    </plurals>
+    <plurals name="expert_mode_selected_count">
+        <item quantity="one">%s избран</item>
+        <item quantity="other">%s избран</item>
+    </plurals>
+    <plurals name="expert_mode_copy_from_bundle_done">
+        <item quantity="one">Копиран е %s пач от избрания пакет</item>
+        <item quantity="other">Копирани са %s пачове от избрания пакет</item>
+    </plurals>
+    <plurals name="core_count">
+        <item quantity="one">%s ядро</item>
+        <item quantity="other">%s ядра</item>
+    </plurals>
+    <plurals name="changelog_feature_count">
+        <item quantity="one">%s функция</item>
+        <item quantity="other">%s функции</item>
+    </plurals>
+    <plurals name="changelog_fix_count">
+        <item quantity="one">%s поправка</item>
+        <item quantity="other">%s поправки</item>
+    </plurals>
+    <plurals name="changelog_performance_count">
+        <item quantity="one">%s оптимизация</item>
+        <item quantity="other">%s оптимизации</item>
+    </plurals>
+    <plurals name="changelog_change_count">
+        <item quantity="one">%s промяна</item>
+        <item quantity="other">%s промени</item>
+    </plurals>
+    <plurals name="changelog_new_releases">
+        <item quantity="one">%s нова версия</item>
+        <item quantity="other">%s нови версии</item>
+    </plurals>
+    <plurals name="app_links_count_enabled">
+        <item quantity="one">%d връзка е активирана</item>
+        <item quantity="other">%d връзки са активирани</item>
+    </plurals>
+    <plurals name="app_links_count_unverified">
+        <item quantity="one">%d непроверена връзка</item>
+        <item quantity="other">%d непроверени връзки</item>
+    </plurals>
+</resources>

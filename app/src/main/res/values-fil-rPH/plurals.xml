@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="patch_count">
+        <item quantity="one">%s na-patch</item>
+        <item quantity="other">%s mga na-patch</item>
+    </plurals>
+    <plurals name="option_count">
+        <item quantity="one">%s pagpipilian ng patch</item>
+        <item quantity="other">%s mga pagpipilian ng patch</item>
+    </plurals>
+    <!-- How many files and folders a folder holds, under its name in the file picker -->
+    <plurals name="file_picker_item_count">
+        <item quantity="one">%s item</item>
+        <item quantity="other">%s item</item>
+    </plurals>
+    <!-- Button that confirms the files checked in the file picker -->
+    <plurals name="file_picker_select_count">
+        <item quantity="one">Pumili ng %s file</item>
+        <item quantity="other">Pumili ng %s file</item>
+    </plurals>
+    <!-- Button that adds every source waiting in the add source dialog -->
+    <plurals name="sources_dialog_add_count">
+        <item quantity="one">Magdagdag ng %s source</item>
+        <item quantity="other">Magdagdag ng %s source</item>
+    </plurals>
+    <plurals name="home_app_patch_sources_title">
+        <item quantity="one">Mga pinagmumulan ng patch para sa %s app</item>
+        <item quantity="other">Mga pinagmumulan ng patch para sa %s na app</item>
+    </plurals>
+    <plurals name="expert_mode_hidden_sources_notice">
+        <item quantity="one">Nakatago ang %s na pinagmumulan. I-tap upang ipakita</item>
+        <item quantity="other">Nakatago ang %s na pinagmumulan. I-tap upang ipakita</item>
+    </plurals>
+    <plurals name="sources_search_patch_matches">
+        <item quantity="one">%s katugmang patch</item>
+        <item quantity="other">%s katugmang patch</item>
+    </plurals>
+    <plurals name="source_count">
+        <item quantity="one">%s mapagkukunan</item>
+        <item quantity="other">%s mga mapagkukunan</item>
+    </plurals>
+    <plurals name="package_count">
+        <item quantity="one">%s pakete</item>
+        <item quantity="other">%s mga pakete</item>
+    </plurals>
+    <plurals name="patches_executed">
+        <item quantity="one">Isinagawa ang %s patch</item>
+        <item quantity="other">Isinagawa ang %s mga patch</item>
+    </plurals>
+    <plurals name="settings_system_apks_count">
+        <item quantity="one">%s APK file</item>
+        <item quantity="other">%s mga APK file</item>
+    </plurals>
+    <plurals name="batch_install_summary">
+        <item quantity="one">Na-install ang %s app</item>
+        <item quantity="other">Na-install ang %s apps</item>
+    </plurals>
+    <plurals name="batch_reinstall_summary">
+        <item quantity="one">Muling na-install ang %s app</item>
+        <item quantity="other">Muling na-install ang %s apps</item>
+    </plurals>
+    <plurals name="batch_uninstall_summary">
+        <item quantity="one">Binura ang %s app</item>
+        <item quantity="other">Binura ang %s apps</item>
+    </plurals>
+    <plurals name="batch_uninstall_confirm_title">
+        <item quantity="one">Burahin ang %s app?</item>
+        <item quantity="other">Burahin ang %s apps?</item>
+    </plurals>
+    <plurals name="batch_patch_ready_count">
+        <item quantity="one">Ang %s app ay handa nang i-patch</item>
+        <item quantity="other">Ang %s apps ay handa nang i-patch</item>
+    </plurals>
+    <plurals name="repatch_available_count">
+        <item quantity="one">%s app ay maaaring i-repatch</item>
+        <item quantity="other">%s apps ay maaaring i-repatch</item>
+    </plurals>
+    <plurals name="batch_skipped_summary">
+        <item quantity="one">Hindi isinama ang %s app</item>
+        <item quantity="other">Hindi isinama ang %s apps</item>
+    </plurals>
+    <plurals name="home_app_info_repatch_cleaned_invalid_data">
+        <item quantity="one">Inalis ang %s na outdated patch mula sa nakaimbak na seleksyon</item>
+        <item quantity="other">Inalis ang %s na mga outdated patch mula sa nakaimbak na seleksyon</item>
+    </plurals>
+    <plurals name="sources_management_subtitle">
+        <item quantity="one">%s na-install na mapagkukunan</item>
+        <item quantity="other">%s na-install na mga mapagkukunan</item>
+    </plurals>
+    <plurals name="home_app_show_hidden_count">
+        <item quantity="one">%s nakatagong app</item>
+        <item quantity="other">%s nakatagong apps</item>
+    </plurals>
+    <plurals name="home_category_app_count">
+        <item quantity="one">%s app</item>
+        <item quantity="other">%s apps</item>
+    </plurals>
+    <plurals name="expert_mode_selected_count">
+        <item quantity="one">%s ang napili</item>
+        <item quantity="other">%s ang napili</item>
+    </plurals>
+    <plurals name="expert_mode_copy_from_bundle_done">
+        <item quantity="one">Kopyado ang %s patch mula sa napiling bundle</item>
+        <item quantity="other">Kopyado ang %s patches mula sa napiling bundle</item>
+    </plurals>
+    <plurals name="core_count">
+        <item quantity="one">%s core</item>
+        <item quantity="other">%s core</item>
+    </plurals>
+    <plurals name="changelog_feature_count">
+        <item quantity="one">%s tampok</item>
+        <item quantity="other">%s mga tampok</item>
+    </plurals>
+    <plurals name="changelog_fix_count">
+        <item quantity="one">%s pag-aayos</item>
+        <item quantity="other">%s pag-aayos</item>
+    </plurals>
+    <plurals name="changelog_performance_count">
+        <item quantity="one">%s pag-optimize</item>
+        <item quantity="other">%s mga pag-optimize</item>
+    </plurals>
+    <plurals name="changelog_change_count">
+        <item quantity="one">%s pagbabago</item>
+        <item quantity="other">%s pagbabago</item>
+    </plurals>
+    <plurals name="changelog_new_releases">
+        <item quantity="one">%s bagong release</item>
+        <item quantity="other">%s bagong release</item>
+    </plurals>
+    <plurals name="app_links_count_enabled">
+        <item quantity="one">%d naka-enable na link</item>
+        <item quantity="other">%d naka-enable na link</item>
+    </plurals>
+    <plurals name="app_links_count_unverified">
+        <item quantity="one">%d hindi pa na-verify na link</item>
+        <item quantity="other">%d hindi pa na-verify na link</item>
+    </plurals>
+</resources>

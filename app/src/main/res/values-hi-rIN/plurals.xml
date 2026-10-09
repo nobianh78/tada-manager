@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="patch_count">
+        <item quantity="one">%s पैच</item>
+        <item quantity="other">%s पैच</item>
+    </plurals>
+    <plurals name="option_count">
+        <item quantity="one">%s पैच विकल्प</item>
+        <item quantity="other">%s पैच विकल्प</item>
+    </plurals>
+    <!-- How many files and folders a folder holds, under its name in the file picker -->
+    <plurals name="file_picker_item_count">
+        <item quantity="one">%s आइटम</item>
+        <item quantity="other">%s आइटम</item>
+    </plurals>
+    <!-- Button that confirms the files checked in the file picker -->
+    <plurals name="file_picker_select_count">
+        <item quantity="one">%s फ़ाइल चुनें</item>
+        <item quantity="other">%s फ़ाइलें चुनें</item>
+    </plurals>
+    <!-- Button that adds every source waiting in the add source dialog -->
+    <plurals name="sources_dialog_add_count">
+        <item quantity="one">%s सोर्स जोड़ें</item>
+        <item quantity="other">%s सोर्स जोड़ें</item>
+    </plurals>
+    <plurals name="home_app_patch_sources_title">
+        <item quantity="one">%s ऐप के लिए पैच सोर्स</item>
+        <item quantity="other">%s ऐप्स के लिए पैच सोर्स</item>
+    </plurals>
+    <plurals name="expert_mode_hidden_sources_notice">
+        <item quantity="one">%s सोर्स छिपा हुआ है। देखने के लिए टैप करें</item>
+        <item quantity="other">%s सोर्स छिपे हुए हैं। देखने के लिए टैप करें</item>
+    </plurals>
+    <plurals name="sources_search_patch_matches">
+        <item quantity="one">%s मिलता-जुलता पैच</item>
+        <item quantity="other">%s मिलते-जुलते पैच</item>
+    </plurals>
+    <plurals name="source_count">
+        <item quantity="one">%s सोर्स</item>
+        <item quantity="other">%s सोर्स</item>
+    </plurals>
+    <plurals name="package_count">
+        <item quantity="one">%s पैकेज</item>
+        <item quantity="other">%s पैकेज</item>
+    </plurals>
+    <plurals name="patches_executed">
+        <item quantity="one">%s पैच लागू किया गया</item>
+        <item quantity="other">%s पैच लागू किए गए</item>
+    </plurals>
+    <plurals name="settings_system_apks_count">
+        <item quantity="one">%s एपीके फाइल</item>
+        <item quantity="other">%s एपीके फाइलें</item>
+    </plurals>
+    <plurals name="batch_install_summary">
+        <item quantity="one">%s इंस्टॉल किया गया ऐप</item>
+        <item quantity="other">%s इंस्टॉल किए गए ऐप्स</item>
+    </plurals>
+    <plurals name="batch_reinstall_summary">
+        <item quantity="one">%s ऐप फिर से इंस्टॉल किया गया</item>
+        <item quantity="other">%s ऐप्स फिर से इंस्टॉल किए गए</item>
+    </plurals>
+    <plurals name="batch_uninstall_summary">
+        <item quantity="one">%s ऐप अनइंस्टॉल किया गया</item>
+        <item quantity="other">%s ऐप्स अनइंस्टॉल किए गए</item>
+    </plurals>
+    <plurals name="batch_uninstall_confirm_title">
+        <item quantity="one">%s ऐप अनइंस्टॉल करें?</item>
+        <item quantity="other">%s ऐप्स अनइंस्टॉल करें?</item>
+    </plurals>
+    <plurals name="batch_patch_ready_count">
+        <item quantity="one">%s ऐप पैच करने के लिए तैयार है</item>
+        <item quantity="other">%s ऐप्स पैच करने के लिए तैयार हैं</item>
+    </plurals>
+    <plurals name="repatch_available_count">
+        <item quantity="one">%s ऐप को फिर से पैच किया जा सकता है</item>
+        <item quantity="other">%s ऐप्स को फिर से पैच किए जा सकते हैं</item>
+    </plurals>
+    <plurals name="batch_skipped_summary">
+        <item quantity="one">%s ऐप छोड़ दिया गया</item>
+        <item quantity="other">%s ऐप्स छोड़ दिए गए</item>
+    </plurals>
+    <plurals name="home_app_info_repatch_cleaned_invalid_data">
+        <item quantity="one">सेव किए गए चयन में से %s पुराना पैच हटा दिया गया</item>
+        <item quantity="other">सेव किए गए चयन में से %s पुराने पैच हटा दिए गए</item>
+    </plurals>
+    <plurals name="sources_management_subtitle">
+        <item quantity="one">%s सोर्स इंस्टॉल किया गया है</item>
+        <item quantity="other">%s सोर्स इंस्टॉल किए गए हैं</item>
+    </plurals>
+    <plurals name="home_app_show_hidden_count">
+        <item quantity="one">%s छिपा हुआ ऐप</item>
+        <item quantity="other">%s छिपे हुए ऐप्स</item>
+    </plurals>
+    <plurals name="home_category_app_count">
+        <item quantity="one">%s ऐप</item>
+        <item quantity="other">%s ऐप्स</item>
+    </plurals>
+    <plurals name="expert_mode_selected_count">
+        <item quantity="one">%s चुना गया</item>
+        <item quantity="other">%s चुने गए</item>
+    </plurals>
+    <plurals name="expert_mode_copy_from_bundle_done">
+        <item quantity="one">चुने गए बंडल से %s पैच कॉपी किया गया</item>
+        <item quantity="other">चुने गए बंडल से %s पैच कॉपी किए गए</item>
+    </plurals>
+    <plurals name="core_count">
+        <item quantity="one">%s कोर</item>
+        <item quantity="other">%s कोर</item>
+    </plurals>
+    <plurals name="changelog_feature_count">
+        <item quantity="one">%s सुविधा</item>
+        <item quantity="other">%s सुविधाएँ</item>
+    </plurals>
+    <plurals name="changelog_fix_count">
+        <item quantity="one">%s सुधार</item>
+        <item quantity="other">%s सुधार</item>
+    </plurals>
+    <plurals name="changelog_performance_count">
+        <item quantity="one">%s अनुकूलन</item>
+        <item quantity="other">%s अनुकूलन</item>
+    </plurals>
+    <plurals name="changelog_change_count">
+        <item quantity="one">%s बदलाव</item>
+        <item quantity="other">%s बदलाव</item>
+    </plurals>
+    <plurals name="changelog_new_releases">
+        <item quantity="one">%s नई रिलीज़</item>
+        <item quantity="other">%s नई रिलीज़ें</item>
+    </plurals>
+    <plurals name="app_links_count_enabled">
+        <item quantity="one">%d लिंक सक्षम किया गया</item>
+        <item quantity="other">%d लिंक सक्षम किए गए</item>
+    </plurals>
+    <plurals name="app_links_count_unverified">
+        <item quantity="one">%d असत्यापित लिंक</item>
+        <item quantity="other">%d असत्यापित लिंक</item>
+    </plurals>
+</resources>
