@@ -1,0 +1,12 @@
+--- app/src/main/res/values/strings.xml
++++ app/src/main/res/values/strings.xml
+@@ -1481,2 +1481,3 @@
+     <string name="chat_patching_finished">All done! 🎉</string>
++    <string name="chat_typing">typing...</string>
+     <string name="chat_user_reply">Ok go ahead</string>
+--- app/src/main/res/values-vi-rVN/strings.xml
++++ app/src/main/res/values-vi-rVN/strings.xml
+@@ -1392,2 +1392,3 @@
+     <string name="chat_patching_finished">Xong rồi! 🎉</string>
++    <string name="chat_typing">đang nhập...</string>
+     <string name="chat_user_reply">Ok vá đi bạn</string>

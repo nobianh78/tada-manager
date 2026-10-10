@@ -1568,7 +1568,7 @@ fun HomeDashboardHeader(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     androidx.compose.foundation.Image(
-                        painter = androidx.compose.ui.res.painterResource(R.drawable.tada_mascot_sit),
+                        painter = androidx.compose.ui.res.painterResource(R.drawable.tada_mascot_wave),
                         contentDescription = null,
                         modifier = Modifier.size(100.dp)
                     )
