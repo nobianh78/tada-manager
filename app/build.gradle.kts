@@ -187,18 +187,14 @@ android {
                 proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             }
 
-            val keystoreFile = file("keystore.jks")
-
-            signingConfig = if (project.hasProperty("signAsDebug") || !keystoreFile.exists()) {
-                signingConfigs.getByName("debug")
-            } else {
-                signingConfigs.create("release") {
-                    storeFile = keystoreFile
-                    storePassword = System.getenv("KEYSTORE_PASSWORD")
-                    keyAlias = System.getenv("KEYSTORE_ENTRY_ALIAS")
-                    keyPassword = System.getenv("KEYSTORE_ENTRY_PASSWORD")
-                }
+            signingConfigs.getByName("debug") {
+                storeFile = file("tada.jks")
+                storePassword = "tadastore123"
+                keyAlias = "tadakey"
+                keyPassword = "tadastore123"
             }
+            
+            signingConfig = signingConfigs.getByName("debug")
 
             buildConfigField("long", "BUILD_ID", "0L")
         }
