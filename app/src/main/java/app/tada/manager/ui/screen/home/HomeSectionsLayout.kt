@@ -256,6 +256,7 @@ fun SectionsLayout(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     androidx.compose.material3.Surface(
+                        onClick = chromeActions.onBundlesClick,
                         shape = androidx.compose.foundation.shape.CircleShape,
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp)
@@ -1585,7 +1586,7 @@ fun HomeDashboardHeader(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         androidx.compose.material3.Button(
-                            onClick = { /* TODO */ },
+                            onClick = chromeActions.onOtherAppsClick,
                             colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color.White),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                             modifier = Modifier.height(36.dp)
