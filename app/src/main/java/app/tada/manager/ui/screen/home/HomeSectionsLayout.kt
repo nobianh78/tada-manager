@@ -324,6 +324,7 @@ private fun AdaptiveContent(
     onboardingState: OnboardingState? = null
 ) {
     val contentPadding = windowSize.contentPadding
+    var showResourcesDialog by remember { mutableStateOf(false) }
     val itemSpacing = windowSize.itemSpacing
     val useTwoColumns = isLandscape()
     val maxCardWidth = if (useTwoColumns) LandscapeMaxCardWidth else Defaults.ContentMaxWidth
@@ -424,7 +425,8 @@ private fun AdaptiveContent(
                                 chromeFlags = chromeFlags,
                                 chromeActions = chromeActions,
                                 searchState = searchState,
-                                onSortClick = onSortClick
+                                onSortClick = onSortClick,
+                                onResourcesClick = { showResourcesDialog = true }
                             )
                             Box(modifier = Modifier.weight(1f, fill = isGroupedAppView)) {
                                 MainAppsSection(
@@ -485,7 +487,8 @@ private fun AdaptiveContent(
                                 chromeFlags = chromeFlags,
                                 chromeActions = chromeActions,
                                 searchState = searchState,
-                                onSortClick = onSortClick
+                                onSortClick = onSortClick,
+                                onResourcesClick = { showResourcesDialog = true }
                             )
 
                 // Section 3: Scrollable app buttons
@@ -528,6 +531,16 @@ private fun AdaptiveContent(
                         .coveredByFooterBar(state.isFooterBarVisible)
                 )
             }
+        }
+    }
+    
+    if (showResourcesDialog) {
+        @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+        androidx.compose.material3.ModalBottomSheet(
+            onDismissRequest = { showResourcesDialog = false },
+            containerColor = MaterialTheme.colorScheme.surface
+        ) {
+            HomeResourcesSection()
         }
     }
 }
@@ -1332,6 +1345,10 @@ internal fun MainAppsSection(
                                         onShowHiddenApps = { state.showHiddenAppsDialog = true }
                                     )
                                 }
+
+                                if (!state.isLoading && isSearchEmpty) {
+                                    // Resources section is now in a BottomSheet
+                                }
                             }
 
                             // Vertical fade overlay drawn on top of LazyColumn.
@@ -1508,7 +1525,8 @@ fun HomeDashboardHeader(
     chromeFlags: HomeChromeFlags,
     chromeActions: HomeChromeActions,
     searchState: HomeSearchState,
-    onSortClick: () -> Unit
+    onSortClick: () -> Unit,
+    onResourcesClick: () -> Unit
 ) {
     val calendar = java.util.Calendar.getInstance()
     val hour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
@@ -1536,6 +1554,19 @@ fun HomeDashboardHeader(
                     color = Color.Gray
                 )
             }
+            
+            // Resources Button
+            androidx.compose.material3.IconButton(
+                onClick = onResourcesClick,
+                modifier = Modifier.background(Color.White, androidx.compose.foundation.shape.CircleShape)
+            ) { 
+                androidx.compose.material3.Icon(
+                    androidx.compose.material.icons.Icons.Outlined.Extension, 
+                    contentDescription = "Tài nguyên", 
+                    tint = Color(0xFFE8930C)
+                ) 
+            }
+            Spacer(modifier = Modifier.width(8.dp))
             
             // Avatar
             androidx.compose.foundation.Image(

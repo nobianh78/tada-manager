@@ -6,6 +6,14 @@
     <string name="home_unpatched_version_installed">Unpatched version installed</string>
     <string name="home_unpatched_badge">Not patched</string>
     <string name="home_no_patches_available">No patches available</string>
+    
+    <!-- Home Resources -->
+    <string name="home_resources_title">Resources</string>
+    <string name="resource_microg_name">MicroG</string>
+    <string name="resource_microg_desc">Required to sign in to Google on patched YouTube</string>
+    <string name="resource_action_download">Download</string>
+    <string name="resource_action_installed">Installed</string>
+
     <string name="home_app_hide_title">Hide this app?</string>
     <string name="home_app_hide_message">This app will be hidden from the home screen. You can restore it later from the hidden apps using the button at the bottom of the list</string>
     <string name="home_app_will_be_hidden">This app will be hidden</string>

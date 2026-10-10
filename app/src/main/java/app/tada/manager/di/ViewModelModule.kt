@@ -18,4 +18,5 @@ val viewModelModule = module {
     viewModelOf(::InstalledAppInfoViewModel)
     viewModelOf(::PatchOptionsViewModel)
     viewModelOf(::StorageManagementViewModel)
+    viewModelOf(::HomeResourcesViewModel)
 }

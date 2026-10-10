@@ -7,6 +7,14 @@
     <string name="home_unpatched_version_installed">Đã cài đặt phiên bản chưa vá</string>
     <string name="home_unpatched_badge">Chưa vá</string>
     <string name="home_no_patches_available">Không có bản vá nào</string>
+    
+    <!-- Home Resources -->
+    <string name="home_resources_title">Tài nguyên</string>
+    <string name="resource_microg_name">MicroG</string>
+    <string name="resource_microg_desc">Cần để đăng nhập Google trên YouTube đã vá</string>
+    <string name="resource_action_download">Tải về</string>
+    <string name="resource_action_installed">Đã cài đặt</string>
+
     <string name="home_app_hide_title">Ẩn ứng dụng này?</string>
     <string name="home_app_hide_message">Ứng dụng này sẽ bị ẩn khỏi trang chủ. Bạn có thể khôi phục lại từ danh sách ứng dụng đang ẩn ở cuối danh sách</string>
     <string name="home_app_will_be_hidden">Ứng dụng này sẽ bị ẩn</string>

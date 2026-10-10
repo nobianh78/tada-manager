@@ -589,6 +589,33 @@ private fun TADaManager(vm: MainViewModel) {
         scope.launch { prefs.firstLaunch.update(false) }
     }
 
+    var isFirstLaunch by remember { mutableStateOf(false) }
+    var permissionsGranted by remember { mutableStateOf(false) }
+    var loaded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        isFirstLaunch = prefs.firstLaunch.get()
+        loaded = true
+    }
+
+    LaunchedEffect(loaded, isFirstLaunch, permissionsGranted) {
+        if (loaded && isFirstLaunch && permissionsGranted && !wantsOnboardingTour.value && onboardingPhase == OnboardingPhase.HOME) {
+            startOnboardingTour()
+        }
+    }
+
+    if (loaded && isFirstLaunch && !permissionsGranted) {
+        Dialog(
+            onDismissRequest = {},
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ) {
+            app.tada.manager.ui.screen.home.FirstLaunchPermissionsScreen(
+                onComplete = {
+                    permissionsGranted = true
+                }
+            )
+        }
+    }
     // Box with background at the highest level
     Box(
         modifier = Modifier

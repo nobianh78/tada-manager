@@ -222,11 +222,9 @@ class PreferencesManager(
                 patcherProcessMemoryLimit.update(adaptive)
             }
 
-            // Existing installs stored their Material You preference in `dynamic_color`;
-            // fold it into [themeStyle] once so the new selector reflects the user's choice
             if (!themeStyleMigrated.get()) {
                 val raw = dataStore.data.first()
-                val legacyDynamicColor = raw[booleanPreferencesKey("dynamic_color")] ?: true
+                val legacyDynamicColor = raw[booleanPreferencesKey("dynamic_color")] ?: false
                 if (legacyDynamicColor && themeStyle.get() == ThemeStyle.MORPHE) {
                     themeStyle.update(ThemeStyle.MATERIAL_YOU)
                 }
