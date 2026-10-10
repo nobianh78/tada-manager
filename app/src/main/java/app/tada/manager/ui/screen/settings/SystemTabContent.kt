@@ -60,10 +60,7 @@ fun SystemTabContent(
     }
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .verticalScrollFade(scrollState)
-            .verticalScroll(scrollState)
-            .padding(settingsTabPadding()),
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Defaults.ContentPadding)
     ) {
         // Installers

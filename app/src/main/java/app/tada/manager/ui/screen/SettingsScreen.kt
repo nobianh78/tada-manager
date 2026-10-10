@@ -11,26 +11,16 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.PhoneAndroid
-import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.*
@@ -41,7 +31,6 @@ import app.tada.manager.ui.screen.home.GlobalOnboardingState
 import app.tada.manager.ui.screen.home.ManagerChangelogDialog
 import app.tada.manager.ui.screen.settings.AdvancedTabContent
 import app.tada.manager.ui.screen.settings.AppearanceTabContent
-import app.tada.manager.ui.screen.settings.LocalSettingsTabBottomPadding
 import app.tada.manager.ui.screen.settings.SystemTabContent
 import app.tada.manager.ui.screen.settings.system.*
 import app.tada.manager.ui.screen.shared.*
@@ -50,18 +39,8 @@ import app.tada.manager.util.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-/** Settings tabs for bottom navigation. */
-private enum class SettingsTab(
-    val titleRes: Int,
-    val icon: ImageVector
-) {
-    APPEARANCE(R.string.appearance, Icons.Outlined.Palette),
-    ADVANCED(R.string.advanced, Icons.Outlined.Tune),
-    SYSTEM(R.string.system, Icons.Outlined.PhoneAndroid)
-}
-
 /**
- * Settings screen with bottom navigation and swipeable tabs.
+ * Unified settings screen with a continuous Card UI.
  */
 @Composable
 fun SettingsScreen(
@@ -80,55 +59,38 @@ fun SettingsScreen(
     val isTV = remember { context.isAndroidTv() }
     val wrongCredentialsText = stringResource(R.string.settings_system_import_keystore_wrong_credentials)
 
-    // Pager state for swipeable tabs
-    val pagerState = rememberPagerState(
-        initialPage = SettingsTab.ADVANCED.ordinal, // Open the Advanced tab when opening settings
-        pageCount = { SettingsTab.entries.size }
-    )
-    val appearanceScrollState = rememberScrollState()
-    val advancedScrollState = rememberScrollState()
-    val systemScrollState = rememberScrollState()
+    val mainScrollState = rememberScrollState()
+
     var themeSelectorScrollTarget by remember { mutableIntStateOf(0) }
     var expertModeScrollTarget by remember { mutableIntStateOf(0) }
     var installerScrollTarget by remember { mutableIntStateOf(0) }
     var processRuntimeScrollTarget by remember { mutableIntStateOf(0) }
     var filePickerScrollTarget by remember { mutableIntStateOf(0) }
 
-    var selectedTabIndex by rememberSaveable { mutableIntStateOf(SettingsTab.ADVANCED.ordinal) }
-
-    // Register scroll/navigate callbacks so TADaManager can drive Settings pager during onboarding
+    // Register scroll/navigate callbacks for onboarding
     LaunchedEffect(globalOnboardingState) {
         globalOnboardingState?.let { obs ->
             obs.onNavigateToAppearanceTab = {
-                selectedTabIndex = SettingsTab.APPEARANCE.ordinal
-                coroutineScope.launch { pagerState.animateScrollToPage(SettingsTab.APPEARANCE.ordinal) }
+                coroutineScope.launch { mainScrollState.animateScrollTo(0) }
             }
             obs.onNavigateToSystemTab = {
-                selectedTabIndex = SettingsTab.SYSTEM.ordinal
-                coroutineScope.launch { pagerState.animateScrollToPage(SettingsTab.SYSTEM.ordinal) }
+                // Approximate scrolling to system tab section
+                coroutineScope.launch { mainScrollState.animateScrollTo(installerScrollTarget) }
             }
             obs.onScrollToThemeSelector = {
-                coroutineScope.launch { appearanceScrollState.animateScrollTo(themeSelectorScrollTarget) }
+                coroutineScope.launch { mainScrollState.animateScrollTo(themeSelectorScrollTarget) }
             }
             obs.onScrollToExpertMode = {
-                selectedTabIndex = SettingsTab.ADVANCED.ordinal
-                coroutineScope.launch {
-                    pagerState.animateScrollToPage(SettingsTab.ADVANCED.ordinal)
-                    advancedScrollState.animateScrollTo(expertModeScrollTarget)
-                }
+                coroutineScope.launch { mainScrollState.animateScrollTo(expertModeScrollTarget) }
             }
             obs.onScrollToInstaller = {
-                coroutineScope.launch { systemScrollState.animateScrollTo(installerScrollTarget) }
+                coroutineScope.launch { mainScrollState.animateScrollTo(installerScrollTarget) }
             }
             obs.onScrollToProcessRuntime = {
-                selectedTabIndex = SettingsTab.ADVANCED.ordinal
-                coroutineScope.launch {
-                    pagerState.animateScrollToPage(SettingsTab.ADVANCED.ordinal)
-                    advancedScrollState.animateScrollTo(processRuntimeScrollTarget)
-                }
+                coroutineScope.launch { mainScrollState.animateScrollTo(processRuntimeScrollTarget) }
             }
             obs.onScrollToFilePicker = {
-                coroutineScope.launch { systemScrollState.animateScrollTo(filePickerScrollTarget) }
+                coroutineScope.launch { mainScrollState.animateScrollTo(filePickerScrollTarget) }
             }
         }
     }
@@ -147,32 +109,11 @@ fun SettingsScreen(
         }
     }
 
-    val landscape = isLandscape()
-
-    // Sync pager → selectedTabIndex (portrait swipes and onboarding callbacks)
-    LaunchedEffect(pagerState.currentPage) {
-        selectedTabIndex = pagerState.currentPage
-    }
-    // When returning to portrait, realign pager with the tab selected in landscape
-    LaunchedEffect(landscape) {
-        if (!landscape) pagerState.scrollToPage(selectedTabIndex)
-    }
-
-    val currentTab = SettingsTab.entries[selectedTabIndex]
-    // The tab layouts own the scrolling, so the scrollbar tracks whichever tab is on screen
-    val currentScrollState = when (currentTab) {
-        SettingsTab.APPEARANCE -> appearanceScrollState
-        SettingsTab.ADVANCED -> advancedScrollState
-        SettingsTab.SYSTEM -> systemScrollState
-    }
-
-    // Appearance settings
     val theme by themeViewModel.prefs.theme.getAsState()
     val themeStyle by themeViewModel.prefs.themeStyle.getAsState()
     val pureBlackTheme by themeViewModel.prefs.pureBlackTheme.getAsState()
     val customAccentColorHex by themeViewModel.prefs.customAccentColor.getAsState()
 
-    // Dialog states
     val showAboutDialog = rememberSaveable { mutableStateOf(false) }
     val showInstallerDialog = remember { mutableStateOf(false) }
     val showChangelogDialog = remember { mutableStateOf(false) }
@@ -187,8 +128,6 @@ fun SettingsScreen(
         onResult = { uri -> uri?.let { importExportViewModel.startKeystoreImport(it) } }
     )
 
-    // Replace and Merge only differ for sources and patch selections, so the mode is asked only
-    // when one of them is taken
     var pendingSettingsImportUri by remember { mutableStateOf<Uri?>(null) }
     val importSettingsLauncher = rememberAdaptiveFilePicker(
         mimeTypes = arrayOf(JSON_MIMETYPE, TEXT_MIMETYPE),
@@ -204,7 +143,6 @@ fun SettingsScreen(
         }
     )
 
-    // Export launchers
     val exportKeystoreLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("*/*")
     ) { uri -> uri?.let { importExportViewModel.exportKeystore(it) } }
@@ -217,12 +155,10 @@ fun SettingsScreen(
         contract = ActivityResultContracts.CreateDocument(TEXT_MIMETYPE)
     ) { uri -> uri?.let { importExportViewModel.exportDebugLogs(it) } }
 
-    // Show about dialog
     if (showAboutDialog.value) {
         AboutDialog(onDismiss = { showAboutDialog.value = false })
     }
 
-    // Show keystore credentials dialog
     if (importExportViewModel.showCredentialsDialog) {
         KeystoreCredentialsDialog(
             onDismiss = {
@@ -240,7 +176,6 @@ fun SettingsScreen(
         )
     }
 
-    // Installer selection dialog
     if (showInstallerDialog.value) {
         InstallerSelectionDialogContainer(
             settingsViewModel = settingsViewModel,
@@ -248,12 +183,10 @@ fun SettingsScreen(
         )
     }
 
-    // Manager changelog dialog
     if (showChangelogDialog.value) {
         ManagerChangelogDialog(onDismiss = { showChangelogDialog.value = false })
     }
 
-    // Import-mode dialog for manager settings: user picks Replace or Merge
     pendingSettingsImportUri?.let { uri ->
         ImportModeDialog(
             titleRes = R.string.settings_system_import_manager_settings_mode_title,
@@ -266,328 +199,179 @@ fun SettingsScreen(
         )
     }
 
-    @Composable
-    fun TabContent(tab: SettingsTab) {
-        when (tab) {
-            SettingsTab.APPEARANCE -> AppearanceTabContent(
-                theme = theme,
-                themeStyle = themeStyle,
-                pureBlackTheme = pureBlackTheme,
-                customAccentColorHex = customAccentColorHex,
-                themeViewModel = themeViewModel,
-                scrollState = appearanceScrollState,
-                onThemeSelectorPositioned = { globalOnboardingState?.themeSelectorBounds = it },
-                onThemeSelectorScrollTarget = { themeSelectorScrollTarget = it }
-            )
-            SettingsTab.ADVANCED -> AdvancedTabContent(
-                patchOptionsViewModel = patchOptionsViewModel,
-                homeViewModel = homeViewModel,
-                settingsViewModel = settingsViewModel,
-                scrollState = advancedScrollState,
-                onExpertModeItemPositioned = { globalOnboardingState?.expertModeBounds = it },
-                onExpertModeScrollTarget = { expertModeScrollTarget = it },
-                onProcessRuntimePositioned = { globalOnboardingState?.processRuntimeBounds = it },
-                onProcessRuntimeScrollTarget = { processRuntimeScrollTarget = it }
-            )
-            SettingsTab.SYSTEM -> SystemTabContent(
-                settingsViewModel = settingsViewModel,
-                onShowInstallerDialog = { showInstallerDialog.value = true },
-                importExportViewModel = importExportViewModel,
-                onImportKeystore = { importKeystoreLauncher() },
-                onExportKeystore = {
-                    if (isTV) importExportViewModel.exportKeystoreToDownloads()
-                    else exportKeystoreLauncher.launch("TADa.keystore")
-                },
-                onImportSettings = { importSettingsLauncher() },
-                onExportSettings = {
-                    if (isTV) importExportViewModel.exportManagerSettingsToDownloads()
-                    else exportSettingsLauncher.launch("morphe_manager_settings.json")
-                },
-                onExportDebugLogs = {
-                    if (isTV) importExportViewModel.exportDebugLogsToDownloads()
-                    else exportDebugLogsLauncher.launch(importExportViewModel.debugLogFileName)
-                },
-                onAboutClick = { showAboutDialog.value = true },
-                onChangelogClick = { showChangelogDialog.value = true },
-                onStartTour = onStartTour,
-                scrollState = systemScrollState,
-                onInstallerSectionPositioned = { globalOnboardingState?.installerSectionBounds = it },
-                onInstallerScrollTarget = { installerScrollTarget = it },
-                onFilePickerPositioned = { globalOnboardingState?.filePickerBounds = it },
-                onFilePickerScrollTarget = { filePickerScrollTarget = it }
-            )
-        }
-    }
-
     val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val backLabel = stringResource(R.string.back)
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (landscape) {
-            // Landscape: sidebar navigation + content panel
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()
-                    .navigationBarsPadding()
-            ) {
-                LandscapeNavPanel(
-                    currentTab = currentTab,
-                    onTabSelected = { tab -> selectedTabIndex = tab.ordinal },
-                    onBack = { backPressedDispatcher?.onBackPressed() },
-                    onAppearanceTabPositioned = { globalOnboardingState?.appearanceTabBounds = it },
-                    onSystemTabPositioned = { globalOnboardingState?.systemTabBounds = it }
-                )
-                VerticalDivider(modifier = Modifier.padding(vertical = 20.dp))
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    AnimatedContent(
-                        targetState = currentTab,
-                        transitionSpec = Animations.fadeCrossfade(200),
-                        label = "settings_tab_landscape",
-                        modifier = Modifier.fillMaxSize()
-                    ) { tab -> TabContent(tab) }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
+        // Invisible back button for TalkBack
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .semantics {
+                    contentDescription = backLabel
+                    onClick(action = { backPressedDispatcher?.onBackPressed(); true })
+                }
+        )
 
-                    ListScrollbar(scrollState = currentScrollState)
+        // Header
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            androidx.compose.material3.IconButton(
+                onClick = { backPressedDispatcher?.onBackPressed() },
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                androidx.compose.material3.Icon(
+                    imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = backLabel,
+                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+                )
+            }
+            androidx.compose.material3.Text(
+                text = stringResource(R.string.settings),
+                style = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        // TADa Manager Brand Banner
+        androidx.compose.material3.Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+            color = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(app.tada.manager.R.drawable.tada_mascot),
+                    contentDescription = "TADa Mascot",
+                    modifier = Modifier.size(64.dp)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    androidx.compose.material3.Text(
+                        text = "TADa Manager",
+                        style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    androidx.compose.material3.Text(
+                        text = app.tada.manager.BuildConfig.VERSION_NAME,
+                        style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    )
                 }
             }
-        } else {
-            // Portrait: horizontal pager + bottom navigation
+        }
+
+        // Main Scrolling Content
+        Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding()
+                    .verticalScrollFade(mainScrollState)
+                    .verticalScroll(mainScrollState)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Invisible back button for TalkBack - must be first in column so it's announced first
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .semantics {
-                            contentDescription = backLabel
-                            onClick(action = { backPressedDispatcher?.onBackPressed(); true })
-                        }
-                )
-                // Overlay sits outside the pager, which clips each page to its own bounds
-                
-                // --- BẮT ĐẦU HEADER CÀI ĐẶT ---
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                ) {
-                    androidx.compose.material3.IconButton(
-                        onClick = { backPressedDispatcher?.onBackPressed() },
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        androidx.compose.material3.Icon(
-                            imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = backLabel,
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    androidx.compose.material3.Text(
-                        text = "Cài đặt",
-                        style = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+                // Category: Appearance
+                SettingsCategoryCard(titleRes = R.string.appearance) {
+                    AppearanceTabContent(
+                        theme = theme,
+                        themeStyle = themeStyle,
+                        pureBlackTheme = pureBlackTheme,
+                        customAccentColorHex = customAccentColorHex,
+                        themeViewModel = themeViewModel,
+                        onThemeSelectorPositioned = { globalOnboardingState?.themeSelectorBounds = it },
+                        onThemeSelectorScrollTarget = { themeSelectorScrollTarget = it }
                     )
                 }
 
-                androidx.compose.material3.Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        androidx.compose.foundation.Image(
-                            painter = androidx.compose.ui.res.painterResource(app.tada.manager.R.drawable.tada_mascot),
-                            contentDescription = "TADa Mascot",
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            androidx.compose.material3.Text(
-                                text = "TADa Manager",
-                                style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            androidx.compose.material3.Text(
-                                text = app.tada.manager.BuildConfig.VERSION_NAME,
-                                style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                            )
-                        }
-                    }
-                }
-                // --- KẾT THÚC HEADER CÀI ĐẶT ---
-                
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) {
-                    // The bottom navigation's own padding already sits under each tab
-                    CompositionLocalProvider(
-                        LocalSettingsTabBottomPadding provides Defaults.ContentPadding - Defaults.ItemSpacing
-                    ) {
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier.fillMaxSize()
-                        ) { page -> TabContent(SettingsTab.entries[page]) }
-                    }
-
-                    ListScrollbar(scrollState = currentScrollState)
+                // Category: Advanced
+                SettingsCategoryCard(titleRes = R.string.advanced) {
+                    AdvancedTabContent(
+                        patchOptionsViewModel = patchOptionsViewModel,
+                        homeViewModel = homeViewModel,
+                        settingsViewModel = settingsViewModel,
+                        onExpertModeItemPositioned = { globalOnboardingState?.expertModeBounds = it },
+                        onExpertModeScrollTarget = { expertModeScrollTarget = it },
+                        onProcessRuntimePositioned = { globalOnboardingState?.processRuntimeBounds = it },
+                        onProcessRuntimeScrollTarget = { processRuntimeScrollTarget = it }
+                    )
                 }
 
-                BottomNavigation(
-                    currentTab = currentTab,
-                    onTabSelected = { tab ->
-                        coroutineScope.launch { pagerState.animateScrollToPage(tab.ordinal) }
-                    },
-                    onAppearanceTabPositioned = { globalOnboardingState?.appearanceTabBounds = it },
-                    onSystemTabPositioned = { globalOnboardingState?.systemTabBounds = it }
-                )
+                // Category: System
+                SettingsCategoryCard(titleRes = R.string.system) {
+                    SystemTabContent(
+                        settingsViewModel = settingsViewModel,
+                        onShowInstallerDialog = { showInstallerDialog.value = true },
+                        importExportViewModel = importExportViewModel,
+                        onImportKeystore = { importKeystoreLauncher() },
+                        onExportKeystore = {
+                            if (isTV) importExportViewModel.exportKeystoreToDownloads()
+                            else exportKeystoreLauncher.launch("TADa.keystore")
+                        },
+                        onImportSettings = { importSettingsLauncher() },
+                        onExportSettings = {
+                            if (isTV) importExportViewModel.exportManagerSettingsToDownloads()
+                            else exportSettingsLauncher.launch("tada_manager_settings.json")
+                        },
+                        onExportDebugLogs = {
+                            if (isTV) importExportViewModel.exportDebugLogsToDownloads()
+                            else exportDebugLogsLauncher.launch(importExportViewModel.debugLogFileName)
+                        },
+                        onAboutClick = { showAboutDialog.value = true },
+                        onChangelogClick = { showChangelogDialog.value = true },
+                        onStartTour = onStartTour,
+                        onInstallerSectionPositioned = { globalOnboardingState?.installerSectionBounds = it },
+                        onInstallerScrollTarget = { installerScrollTarget = it },
+                        onFilePickerPositioned = { globalOnboardingState?.filePickerBounds = it }
+                    )
+                }
+
+                // Add bottom padding to allow scrolling past bottom nav in edge-to-edge
+                Spacer(modifier = Modifier.height(100.dp))
             }
+            ListScrollbar(scrollState = mainScrollState)
         }
     }
 }
 
-/**
- * Landscape sidebar navigation panel.
- */
+/** Wrapper Card for Settings Categories */
 @Composable
-private fun LandscapeNavPanel(
-    currentTab: SettingsTab,
-    onTabSelected: (SettingsTab) -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    onAppearanceTabPositioned: ((Rect) -> Unit)? = null,
-    onSystemTabPositioned: ((Rect) -> Unit)? = null
+fun SettingsCategoryCard(
+    titleRes: Int,
+    content: @Composable () -> Unit
 ) {
     Column(
-        modifier = modifier
-            .width(220.dp)
-            .fillMaxHeight()
-            .padding(horizontal = 12.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(Defaults.ItemSpacing)
+        modifier = Modifier.fillMaxWidth()
     ) {
-        // Centered in the room above Back, so the two never close up on a short screen
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(Defaults.ItemSpacing, Alignment.CenterVertically)
-        ) {
-            SettingsTab.entries.forEach { tab ->
-                val positionedModifier = when (tab) {
-                    SettingsTab.APPEARANCE if onAppearanceTabPositioned != null ->
-                        Modifier.onGloballyPositioned { onAppearanceTabPositioned(it.boundsInWindow()) }
-                    SettingsTab.SYSTEM if onSystemTabPositioned != null ->
-                        Modifier.onGloballyPositioned { onSystemTabPositioned(it.boundsInWindow()) }
-                    else -> Modifier
-                }
-                // The tabs of the portrait bar, every label shown since the sidebar has the room
-                GlassButton(
-                    icon = tab.icon,
-                    label = stringResource(tab.titleRes),
-                    selected = currentTab == tab,
-                    onClick = { onTabSelected(tab) },
-                    modifier = Modifier.fillMaxWidth().then(positionedModifier),
-                    pressScale = true,
-                    hapticFeedback = true,
-                    showLabel = true
-                )
-            }
-        }
-        ActionGlassButton(
-            onClick = onBack,
-            icon = Icons.AutoMirrored.Outlined.ArrowBack,
-            text = stringResource(R.string.back),
-            showLabel = true,
-            modifier = Modifier.fillMaxWidth().semantics { traversalIndex = -1f }
+        androidx.compose.material3.Text(
+            text = stringResource(titleRes),
+            style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+            color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 12.dp, bottom = 8.dp)
         )
-    }
-}
-
-/**
- * Bottom navigation bar.
- */
-@Composable
-private fun BottomNavigation(
-    currentTab: SettingsTab,
-    onTabSelected: (SettingsTab) -> Unit,
-    onAppearanceTabPositioned: ((Rect) -> Unit)? = null,
-    onSystemTabPositioned: ((Rect) -> Unit)? = null
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding(),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            modifier = Modifier
-                .widthIn(max = 448.dp)
-                .fillMaxWidth()
-                .padding(
-                    horizontal = Defaults.ContentPadding,
-                    vertical = Defaults.ItemSpacing
-                )
-                .animateContentSize(),
-            horizontalArrangement = Arrangement.spacedBy(Defaults.ItemSpacing),
-            verticalAlignment = Alignment.CenterVertically
+        androidx.compose.material3.Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+            color = androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         ) {
-            SettingsTab.entries.forEach { tab ->
-                val isSelected = currentTab == tab
-                NavigationItem(
-                    tab = tab,
-                    isSelected = isSelected,
-                    onClick = { onTabSelected(tab) },
-                    modifier = Modifier
-                        .then(if (isSelected) Modifier.weight(1f) else Modifier.width(64.dp))
-                        .then(
-                            when (tab) {
-                                SettingsTab.APPEARANCE if onAppearanceTabPositioned != null ->
-                                    Modifier.onGloballyPositioned { coords ->
-                                        onAppearanceTabPositioned(coords.boundsInWindow())
-                                    }
-
-                                SettingsTab.SYSTEM if onSystemTabPositioned != null ->
-                                    Modifier.onGloballyPositioned { coords ->
-                                        onSystemTabPositioned(coords.boundsInWindow())
-                                    }
-
-                                else -> Modifier
-                            }
-                        )
-                )
+            Box(modifier = Modifier.padding(vertical = 12.dp)) {
+                content()
             }
         }
     }
-}
-
-/**
- * Individual navigation item.
- */
-@Composable
-private fun NavigationItem(
-    tab: SettingsTab,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    GlassButton(
-        icon = tab.icon,
-        label = stringResource(tab.titleRes),
-        selected = isSelected,
-        onClick = onClick,
-        modifier = modifier,
-        pressScale = true,
-        hapticFeedback = true
-    )
 }
