@@ -31,7 +31,7 @@ object ResourceMonitor {
     const val LOG_USAGE_PREFIX_DONE = "Usage after patching:"
     const val LOG_USAGE_FIELD_IO_PEAK = "ioPeak"
 
-    private const val MONITOR_INTERVAL = 2000L
+    private const val MONITOR_INTERVAL = 500L
 
     @Volatile
     private var polling = false
