@@ -47,6 +47,8 @@ import app.tada.manager.patcher.runtime.ResourceMonitor.LOG_MEMORY_FIELD_MAX
 import app.tada.manager.patcher.runtime.ResourceMonitor.LOG_MEMORY_PREFIX_DONE
 import app.tada.manager.patcher.runtime.ResourceMonitor.LOG_USAGE_FIELD_IO_PEAK
 import app.tada.manager.patcher.runtime.ResourceMonitor.LOG_USAGE_PREFIX_DONE
+import app.tada.manager.patcher.runtime.ResourceMonitor.LOG_MEMORY_PREFIX_CURRENT
+import app.tada.manager.patcher.runtime.ResourceMonitor.LOG_USAGE_PREFIX_CURRENT
 import app.tada.manager.patcher.runtime.process.PatcherProcess.Companion.LOG_PROCESS_PREFIX_PROCESS_HEAP
 import app.tada.manager.patcher.worker.PatcherWorker.Companion.LOG_PROCESS_PREFIX_COROUTINE_HEAP
 import app.tada.manager.patcher.worker.PatcherWorker.Companion.LOG_WORKER_FIELD_ANDROID
@@ -137,6 +139,12 @@ sealed interface LogItem {
         val ioPeakRate: String?,
     ) : LogItem
 
+    /** Real-time performance monitor log. */
+    data class PerformanceRealtime(
+        val heapStr: String,
+        val usageStr: String
+    ) : LogItem
+
     /** Standard single-line log entry. */
     data class Entry(val level: LogLevel, val message: String) : LogItem
 }
@@ -167,6 +175,11 @@ internal class LogItemAccumulator(
 
     private var startBannerIndex = -1
     private var successSummaryIndex = -1
+    private var performanceIndex = -1
+
+    // Real-time performance
+    private var currentHeap: String = "Monitoring heap..."
+    private var currentUsage: String = "Monitoring CPU/IO..."
 
     // Metadata for StartBanner
     private var managerVersion: String? = null
@@ -234,6 +247,14 @@ internal class LogItemAccumulator(
                 ioPeakKbPerSec = message.logField(LOG_USAGE_FIELD_IO_PEAK)?.toIntOrNull()
                 updateSuccessSummary()
             }
+            message.startsWith(LOG_MEMORY_PREFIX_CURRENT) -> {
+                currentHeap = message
+                updatePerformanceRealtime()
+            }
+            message.startsWith(LOG_USAGE_PREFIX_CURRENT) -> {
+                currentUsage = message
+                updatePerformanceRealtime()
+            }
             message.startsWith(LOG_PROCESS_PREFIX_PROCESS_HEAP) ||
                 message.startsWith(LOG_PROCESS_PREFIX_COROUTINE_HEAP) -> {
                 // Auxiliary lines consumed without emitting a LogItem
@@ -280,6 +301,9 @@ internal class LogItemAccumulator(
         targetList.clear()
         startBannerIndex = -1
         successSummaryIndex = -1
+        performanceIndex = -1
+        currentHeap = "Monitoring heap..."
+        currentUsage = "Monitoring CPU/IO..."
         managerVersion = null
         patcherVersion = null
         stripsNativeLibs = null
@@ -311,6 +335,9 @@ internal class LogItemAccumulator(
                 targetList.removeAt(removeIndex)
                 if (successSummaryIndex > removeIndex) {
                     successSummaryIndex--
+                }
+                if (performanceIndex > removeIndex) {
+                    performanceIndex--
                 }
             }
         }
@@ -355,6 +382,20 @@ internal class LogItemAccumulator(
         processHeapAverageMb = processHeapAverageMb,
         processHeapMaxMb = processHeapMaxMb,
         ioPeakRate = ioPeakKbPerSec?.let(::formatRate),
+    )
+
+    private fun updatePerformanceRealtime() {
+        if (performanceIndex == -1) {
+            performanceIndex = targetList.size
+            addItem(buildPerformanceRealtime())
+        } else if (performanceIndex in targetList.indices) {
+            targetList[performanceIndex] = buildPerformanceRealtime()
+        }
+    }
+
+    private fun buildPerformanceRealtime(): LogItem.PerformanceRealtime = LogItem.PerformanceRealtime(
+        heapStr = currentHeap,
+        usageStr = currentUsage
     )
 }
 
@@ -780,7 +821,39 @@ private fun LogItemContent(item: LogItem) {
     when (item) {
         is LogItem.StartBanner -> StartBannerCard(item)
         is LogItem.SuccessSummary -> SuccessSummaryCard(item)
+        is LogItem.PerformanceRealtime -> PerformanceRealtimeCard(item)
         is LogItem.Entry -> LogEntryRow(item.level, item.message)
+    }
+}
+
+@Composable
+private fun PerformanceRealtimeCard(item: LogItem.PerformanceRealtime) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = PatcherCardMargin, vertical = 4.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                text = "Live Performance Monitor",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = item.heapStr,
+                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = item.usageStr,
+                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
