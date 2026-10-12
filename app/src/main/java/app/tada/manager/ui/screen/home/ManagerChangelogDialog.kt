@@ -12,21 +12,27 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
@@ -44,11 +50,6 @@ import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import java.text.NumberFormat
 import kotlin.time.Duration.Companion.milliseconds
-
-private val ProgressRingSize = 220.dp
-private val ProgressRingWavelength = 30.dp
-private val SuccessIconContainerSize = 80.dp
-private val SuccessIconSize = 40.dp
 
 /**
  * How long the app must hold the foreground before an install left in
@@ -86,15 +87,8 @@ private fun updateDialogContentOf(updateViewModel: UpdateViewModel): UpdateDialo
     }
 
 /**
- * Changelog of the manager, which doubles as its update dialog. The timeline runs from the
- * releases an available update brings, summed up above them, through the installed version to
- * the history below, and the footer downloads and installs the update while there is one.
- *
- * @param updateViewModel Activity-scoped by default, so every entry point shares one update
- *   check and one staged download.
- * @param expectsUpdate Whether the dialog was opened for an update, from the banner or its
- *   notification. It then keeps to the update even when the check comes back empty, saying the
- *   release is not ready yet and offering to check again.
+ * TADa Manager update & changelog dialog.
+ * Designed with the adorable TADa mascot, warm cream/amber tones, and user-friendly flows.
  */
 @Composable
 fun ManagerChangelogDialog(
@@ -107,8 +101,6 @@ fun ManagerChangelogDialog(
     val state = updateViewModel.state
     val content = updateDialogContentOf(updateViewModel)
     val hasUpdate = updateViewModel.releaseInfo != null
-    // A banner can outlive the release it points at, and a check can fail outright, so name the
-    // situation rather than wait on data that is not coming
     val isUpdateUnavailable = expectsUpdate && !hasUpdate && !updateViewModel.isCheckingForUpdate
     val morpheAccent = rememberSourceAccent(isDefault = true, avatarUrl = null, fallbackAvatarUrl = null)
     val older = OlderReleases(
@@ -118,8 +110,6 @@ fun ManagerChangelogDialog(
         onLoad = updateViewModel::loadOlderManagerEntries
     )
 
-    // An installer activity reports nothing when it is dismissed, so an abandoned install shows
-    // up only as the app holding the foreground while the state is still INSTALLING
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(lifecycleOwner, updateViewModel) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -131,7 +121,7 @@ fun ManagerChangelogDialog(
     LaunchedEffect(Unit) {
         updateViewModel.loadChangelog()
     }
-    // Drop the older releases when the dialog closes so it reopens on the releases it starts with
+
     DisposableEffect(Unit) {
         onDispose { updateViewModel.resetOlderManagerEntries() }
     }
@@ -139,8 +129,6 @@ fun ManagerChangelogDialog(
     AppDialog(
         onDismissRequest = onDismiss,
         scrollable = false,
-        // The timeline gives up its leading edge to the rail, so the list takes the wider layout.
-        // The header holds the top, and progress and results sit centered in the room below it
         padding = DialogPadding.Compact,
         contentArrangement = Arrangement.Top,
         fillContentHeight = true,
@@ -151,36 +139,22 @@ fun ManagerChangelogDialog(
                 modifier = Modifier.fillMaxWidth(),
                 label = "updateFooter"
             ) { footerState ->
-                UpdateDialogFooter(
+                TadaUpdateDialogFooter(
                     state = footerState,
                     updateViewModel = updateViewModel,
                     expectsUpdate = expectsUpdate,
                     onDismiss = onDismiss,
-                    // Only the changelog body has anything to translate
                     translatable = content == UpdateDialogContent.Details
                 )
             }
         }
     ) {
-        // Headed by TADa itself, as a source's changelog is by the source. The version is the
-        // one on its way where there is one, so a download names what it fetches
-        ListDialogHeader(
-            icon = { modifier ->
-                Surface(modifier = modifier, shape = CircleShape, color = Color.White) {
-                    TadaLauncherLogo(modifier = Modifier.fillMaxSize())
-                }
-            },
-            // With no update on the way, this is just the changelog
-            title = if (state == UpdateViewModel.State.CAN_DOWNLOAD && !hasUpdate && !expectsUpdate) {
-                stringResource(R.string.changelog)
-            } else {
-                stringResource(state.title)
-            },
-            subtitle = listOf(
-                stringResource(R.string.app_name),
-                (updateViewModel.releaseInfo?.version ?: BuildConfig.VERSION_NAME).withVersionPrefix().isolateLtr()
-            ).joinToString(" · "),
-            accentColor = morpheAccent
+        // Cute TADa Mascot Header
+        TadaUpdateHeader(
+            content = content,
+            hasUpdate = hasUpdate,
+            currentVersion = BuildConfig.VERSION_NAME,
+            targetVersion = updateViewModel.releaseInfo?.version
         )
 
         AnimatedContent(
@@ -190,8 +164,8 @@ fun ManagerChangelogDialog(
                 .fillMaxWidth()
                 .weight(1f),
             label = "updateContent"
-        ) { content ->
-            when (content) {
+        ) { currentContent ->
+            when (currentContent) {
                 UpdateDialogContent.DetailsLoading -> ChangelogListLoading(
                     withSummary = hasUpdate || expectsUpdate,
                     modifier = Modifier.padding(top = Defaults.ItemSpacing)
@@ -206,10 +180,8 @@ fun ManagerChangelogDialog(
                         entries = entries,
                         older = older,
                         badges = mapOf(BuildConfig.VERSION_NAME to ChangelogBadge.INSTALLED),
-                        // The gap under the header is the list's own, so releases scroll up to its edge
                         contentPadding = PaddingValues(top = Defaults.ItemSpacing),
                         header = when {
-                            // Everything the user is about to install, summed up above the releases themselves
                             newReleases.isNotEmpty() -> {
                                 {
                                     ChangelogUpdateSummary(
@@ -237,24 +209,23 @@ fun ManagerChangelogDialog(
                 }
 
                 UpdateDialogContent.Downloading -> CenteredStatus {
-                    DownloadProgress(
+                    TadaDownloadProgress(
                         downloadedSize = updateViewModel.downloadedSize,
                         totalSize = updateViewModel.totalSize,
-                        progress = updateViewModel.downloadProgress,
-                        accentColor = morpheAccent
+                        progress = updateViewModel.downloadProgress
                     )
                 }
 
                 UpdateDialogContent.Installing -> CenteredStatus {
-                    PulsingLogoWithCaption(caption = stringResource(R.string.installing_manager_update_hint))
+                    TadaInstallingState()
                 }
 
                 UpdateDialogContent.Failed -> CenteredStatus {
-                    InstallFailureContent(updateViewModel.installError)
+                    TadaInstallFailureContent(updateViewModel.installError)
                 }
 
                 UpdateDialogContent.Success -> CenteredStatus {
-                    UpdateCompletedContent(version = updateViewModel.releaseInfo?.version)
+                    TadaUpdateCompletedContent(version = updateViewModel.releaseInfo?.version)
                 }
             }
         }
@@ -273,9 +244,307 @@ fun ManagerChangelogDialog(
     }
 }
 
-/** Dialog actions, one set per [UpdateViewModel.State]. */
+/**
+ * TADa Mascot Header for Update Dialog.
+ */
 @Composable
-private fun UpdateDialogFooter(
+private fun TadaUpdateHeader(
+    content: UpdateDialogContent,
+    hasUpdate: Boolean,
+    currentVersion: String,
+    targetVersion: String?
+) {
+    val mascotRes = when (content) {
+        UpdateDialogContent.Success -> R.drawable.tada_mascot_celebrate
+        UpdateDialogContent.Downloading, UpdateDialogContent.Installing -> R.drawable.tada_mascot_sit
+        else -> R.drawable.tada_mascot_wave
+    }
+
+    val title = when (content) {
+        UpdateDialogContent.Success -> "Cập nhật thành công! 🎉"
+        UpdateDialogContent.Downloading -> "Đang tải bản mới nè... 🎋"
+        UpdateDialogContent.Installing -> "Đang cài đặt TADa... ⏳"
+        UpdateDialogContent.Failed -> "Có lỗi khi cài đặt rồi 🥺"
+        else -> if (hasUpdate) "TADa có bản cập nhật mới! ✨" else stringResource(R.string.changelog)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Cute Mascot Badge
+        Box(
+            modifier = Modifier
+                .size(76.dp)
+                .background(
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                    RoundedCornerShape(26.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(mascotRes),
+                contentDescription = null,
+                modifier = Modifier.size(62.dp)
+            )
+        }
+
+        // Title
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = LocalDialogTextColor.current,
+            textAlign = TextAlign.Center
+        )
+
+        // Version comparison pill
+        if (hasUpdate && targetVersion != null) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "v${currentVersion.removePrefix("v")}",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = LocalDialogSecondaryTextColor.current
+                    )
+                    Text(
+                        text = "➜",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "v${targetVersion.removePrefix("v")}",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        } else {
+            Text(
+                text = listOf(
+                    stringResource(R.string.app_name),
+                    (targetVersion ?: currentVersion).withVersionPrefix().isolateLtr()
+                ).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalDialogSecondaryTextColor.current
+            )
+        }
+
+        // Cute speech bubble banner when update is available in Details view
+        if (hasUpdate && content == UpdateDialogContent.Details) {
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp, vertical = 4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text("🎋", fontSize = 20.sp)
+                    Text(
+                        text = "Gấu trúc TADa đã chuẩn bị phiên bản mới với nhiều tính năng xịn sò. Cập nhật ngay nhé bạn ơi! ✨",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = LocalDialogTextColor.current,
+                        lineHeight = 18.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Modern, friendly download progress UI in TADa style.
+ */
+@Composable
+private fun TadaDownloadProgress(
+    downloadedSize: Long,
+    totalSize: Long,
+    progress: Float
+) {
+    val percentage = (progress * 100).toInt().coerceIn(0, 100)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Percentage Display
+        Text(
+            text = "$percentage%",
+            style = MaterialTheme.typography.displayMedium,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        // Rounded Linear Progress Bar
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .clip(CircleShape),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+        )
+
+        // MB Counter
+        val sizeText = if (totalSize > 0L) {
+            "${formatMegabytes(downloadedSize)} / ${formatMegabytes(totalSize)}"
+        } else if (downloadedSize > 0L) {
+            formatMegabytes(downloadedSize)
+        } else {
+            "Đang kết nối..."
+        }
+
+        Text(
+            text = sizeText,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = LocalDialogSecondaryTextColor.current
+        )
+
+        Text(
+            text = "Đang tải xuống bản cập nhật APK chính thức từ máy chủ TADa... 🎋",
+            style = MaterialTheme.typography.bodySmall,
+            color = LocalDialogSecondaryTextColor.current.copy(alpha = 0.85f),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+/**
+ * Installing state UI in TADa style.
+ */
+@Composable
+private fun TadaInstallingState() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(54.dp),
+            color = MaterialTheme.colorScheme.primary,
+            strokeWidth = 5.dp
+        )
+
+        Text(
+            text = "Đang mở trình cài đặt hệ thống...",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = LocalDialogTextColor.current
+        )
+
+        Text(
+            text = "Hệ thống sẽ hiện thông báo xác nhận, bạn vui lòng chọn 'Cập nhật' hoặc 'Cài đặt' nha! 🎋",
+            style = MaterialTheme.typography.bodySmall,
+            color = LocalDialogSecondaryTextColor.current,
+            textAlign = TextAlign.Center,
+            lineHeight = 20.sp
+        )
+    }
+}
+
+/**
+ * Install failure UI in TADa style.
+ */
+@Composable
+private fun TadaInstallFailureContent(message: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Notice(
+            icon = Icons.Outlined.ErrorOutline,
+            text = if (message.isNotBlank()) message else "Không thể cài đặt bản cập nhật. Bạn vui lòng thử lại nhé!",
+            tone = SemanticTone.Error
+        )
+    }
+}
+
+/**
+ * Success confirmation UI in TADa style.
+ */
+@Composable
+private fun TadaUpdateCompletedContent(version: String?) {
+    val scale by rememberEntranceScale(
+        from = 0.6f,
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        label = "tadaSuccessScale"
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = SemanticTone.Success.container,
+            modifier = Modifier
+                .size(76.dp)
+                .scale(scale)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                ThemedIcon(
+                    icon = Icons.Outlined.CheckCircle,
+                    tint = SemanticTone.Success.content,
+                    size = 40.dp
+                )
+            }
+        }
+
+        Text(
+            text = "TADa đã được cập nhật thành công! 🎋✨",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = LocalDialogTextColor.current,
+            textAlign = TextAlign.Center
+        )
+
+        if (version != null) {
+            Text(
+                text = "Phiên bản hiện tại: ${version.isolateLtr()}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = LocalDialogSecondaryTextColor.current,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+/**
+ * TADa Update Dialog Footer with friendly buttons.
+ */
+@Composable
+private fun TadaUpdateDialogFooter(
     state: UpdateViewModel.State,
     updateViewModel: UpdateViewModel,
     expectsUpdate: Boolean,
@@ -286,7 +555,6 @@ private fun UpdateDialogFooter(
 
     val actions: List<DialogAction> = when (state) {
         UpdateViewModel.State.CAN_DOWNLOAD -> buildList {
-            // Opened for the changelog alone, the dialog offers the download only once an update turns up
             if (releaseInfo == null && !expectsUpdate) {
                 if (updateViewModel.changelogError != null) {
                     add(
@@ -309,16 +577,21 @@ private fun UpdateDialogFooter(
 
             add(
                 DialogAction(
-                    text = stringResource(R.string.download),
+                    text = "Tải về & Cài đặt ✨",
                     onClick = { updateViewModel.downloadUpdate() },
                     icon = Icons.Outlined.Download,
-                    // Nothing to download until the check resolves an actual release
                     enabled = releaseInfo != null
                 )
             )
 
-            // Offered once the check has settled on nothing, which is recoverable
-            // on its own a moment later
+            add(
+                DialogAction(
+                    text = "Để sau nha",
+                    onClick = onDismiss,
+                    emphasis = DialogActionEmphasis.Outlined
+                )
+            )
+
             if (releaseInfo == null && !updateViewModel.isCheckingForUpdate) {
                 add(
                     DialogAction(
@@ -332,7 +605,7 @@ private fun UpdateDialogFooter(
 
         UpdateViewModel.State.DOWNLOADING -> listOf(
             DialogAction(
-                text = stringResource(R.string.close),
+                text = "Ẩn xuống nền",
                 onClick = onDismiss,
                 emphasis = DialogActionEmphasis.Outlined
             )
@@ -340,47 +613,44 @@ private fun UpdateDialogFooter(
 
         UpdateViewModel.State.CAN_INSTALL -> listOf(
             DialogAction(
-                text = stringResource(R.string.install),
+                text = "Cài đặt ngay 🚀",
                 onClick = { updateViewModel.installUpdate() },
                 icon = Icons.Outlined.InstallMobile
+            ),
+            DialogAction(
+                text = "Để sau nha",
+                onClick = onDismiss,
+                emphasis = DialogActionEmphasis.Outlined
             )
         )
 
-        UpdateViewModel.State.INSTALLING -> {
-            // No cancel button during installation - can't cancel system dialog
-            // User can close our dialog, but install will continue
-            emptyList()
-        }
+        UpdateViewModel.State.INSTALLING -> emptyList()
 
         UpdateViewModel.State.FAILED -> listOf(
-            // Only an install can end here, so the retry is always an install; a download that
-            // fails drops what it wrote and returns to CAN_DOWNLOAD
             DialogAction(
-                text = stringResource(R.string.install),
+                text = "Thử cài đặt lại",
                 onClick = { updateViewModel.installUpdate() },
                 icon = Icons.Outlined.InstallMobile
             ),
             DialogAction(
                 text = stringResource(android.R.string.cancel),
-                onClick = onDismiss
+                onClick = onDismiss,
+                emphasis = DialogActionEmphasis.Outlined
             )
         )
 
         UpdateViewModel.State.SUCCESS -> listOf(
             DialogAction(
-                text = stringResource(R.string.close),
-                onClick = onDismiss,
-                emphasis = DialogActionEmphasis.Outlined
+                text = "Hoàn tất ✨",
+                onClick = onDismiss
             )
         )
     }
 
-    // The release page stays at hand while the changelog is on screen or an install has failed
     val offersReleasePage = state == UpdateViewModel.State.CAN_DOWNLOAD ||
             state == UpdateViewModel.State.CAN_INSTALL ||
             state == UpdateViewModel.State.FAILED
 
-    // The page of the update while there is one, else that of the newest release listed
     val pageUrl = releaseInfo?.pageUrl
         ?: updateViewModel.changelogEntries?.firstOrNull()?.version?.let { releasePageUrl(MANAGER_REPO_URL, it) }
 
@@ -391,148 +661,11 @@ private fun UpdateDialogFooter(
     )
 }
 
-/** Stands a progress or result in the middle of the room the header leaves, where the list would be. */
+/** Stands a progress or result in the middle of the room the header leaves. */
 @Composable
 private fun CenteredStatus(content: @Composable () -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         content()
-    }
-}
-
-/**
- * Download progress as a wavy ring with the percentage at its center. The header names the
- * release being fetched.
- *
- * The total size is unknown until the first progress callback, which the ring waits out empty at
- * zero so it does not flash an indeterminate state before the first percent. Only a server that
- * streams the release without a content length leaves it indeterminate, around the amount fetched.
- */
-@Composable
-private fun DownloadProgress(
-    downloadedSize: Long,
-    totalSize: Long,
-    progress: Float,
-    accentColor: Color?
-) {
-    val hasKnownSize = totalSize > 0L
-    val isStreaming = !hasKnownSize && downloadedSize > 0L
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = tween(Defaults.ANIMATION_DURATION),
-        label = "downloadProgress"
-    )
-
-    // The ring grows in from a little smaller, so the switch from the changelog reads as a start
-    val scale by rememberEntranceScale(
-        from = 0.85f,
-        dampingRatio = Spring.DampingRatioLowBouncy,
-        label = "downloadRingScale"
-    )
-
-    Box(
-        modifier = Modifier
-            .size(ProgressRingSize)
-            .scale(scale),
-        contentAlignment = Alignment.Center
-    ) {
-        WavyProgressRing(
-            progress = if (isStreaming) null else ({ animatedProgress }),
-            wavelength = ProgressRingWavelength,
-            accentColor = accentColor,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            if (!isStreaming) {
-                val locale = LocalConfiguration.current.locales[0]
-                Text(
-                    text = remember(locale) { NumberFormat.getPercentInstance(locale) }.format(progress),
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold,
-                    color = LocalDialogTextColor.current
-                )
-            }
-            // Nothing to size up before the first callback, so the percentage stands alone
-            if (hasKnownSize || isStreaming) {
-                Text(
-                    text = if (hasKnownSize) {
-                        stringResource(
-                            R.string.manager_update_progress_size,
-                            formatMegabytes(downloadedSize),
-                            formatMegabytes(totalSize)
-                        )
-                    } else {
-                        stringResource(
-                            R.string.manager_update_progress_downloaded,
-                            formatMegabytes(downloadedSize)
-                        )
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = LocalDialogSecondaryTextColor.current,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-    }
-}
-
-/** Installer failure details. The dialog title already states that the install failed. */
-@Composable
-private fun InstallFailureContent(message: String) {
-    if (message.isEmpty()) return
-
-    Notice(
-        icon = Icons.Outlined.ErrorOutline,
-        text = message,
-        tone = SemanticTone.Error
-    )
-}
-
-/**
- * Success confirmation, with the check mark springing into place. The installed [version] takes
- * the place of a caption because the dialog title already announces the result.
- */
-@Composable
-private fun UpdateCompletedContent(version: String?) {
-    val scale by rememberEntranceScale(
-        from = 0.6f,
-        dampingRatio = Spring.DampingRatioMediumBouncy,
-        label = "successScale"
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Defaults.ContentPaddingExpanded),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Defaults.ContentPaddingMedium)
-    ) {
-        Surface(
-            shape = CircleShape,
-            color = SemanticTone.Success.container,
-            modifier = Modifier
-                .size(SuccessIconContainerSize)
-                .scale(scale)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                ThemedIcon(
-                    icon = Icons.Outlined.CheckCircle,
-                    tint = SemanticTone.Success.content,
-                    size = SuccessIconSize
-                )
-            }
-        }
-
-        if (version != null) {
-            Text(
-                text = version.isolateLtr(),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = LocalDialogTextColor.current,
-                textAlign = TextAlign.Center
-            )
-        }
     }
 }
 

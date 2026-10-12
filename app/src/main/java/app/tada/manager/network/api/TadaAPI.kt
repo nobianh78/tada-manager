@@ -303,8 +303,15 @@ class TadaAPI(
         releaseInfo: ManagerReleaseInfo
     ): TadaAsset {
         val version = normalizeVersion(releaseInfo.version)
+        val rawVersion = version.removePrefix("v")
+        val directApkUrl = "${config.htmlUrl}/releases/download/$version/tada-manager-$rawVersion.apk"
+        val downloadUrl = if (releaseInfo.downloadUrl.endsWith(".apk", ignoreCase = true)) {
+            releaseInfo.downloadUrl
+        } else {
+            directApkUrl
+        }
         return TadaAsset(
-            downloadUrl = releaseInfo.downloadUrl,
+            downloadUrl = downloadUrl,
             createdAt = parseTimestamp(releaseInfo.createdAt),
             signatureDownloadUrl = releaseInfo.signatureDownloadUrl,
             pageUrl = releasePageUrl(config.htmlUrl, version),
