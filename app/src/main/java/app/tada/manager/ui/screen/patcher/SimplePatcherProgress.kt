@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.tada.manager.R
@@ -30,6 +31,9 @@ import app.tada.manager.ui.model.PatchProgressSource
 import app.tada.manager.ui.model.State
 import app.tada.manager.ui.screen.shared.rememberAccessibilityEnabled
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 data class ChatMessage(val id: Int, val text: String, val isUser: Boolean = false)
 
@@ -77,59 +81,66 @@ fun SimplePatchingInProgress(
 
     val strStart = stringResource(R.string.chat_patching_start, appName)
     val strUserReply = stringResource(R.string.chat_user_reply)
-    
-    // Initial message sequence
-    LaunchedEffect(Unit) {
-        isTyping = true
-        delay(800)
-        messages.add(ChatMessage(nextMessageId++, strStart))
-        isTyping = false
-        
-        delay(1000)
-        messages.add(ChatMessage(nextMessageId++, strUserReply, isUser = true))
-    }
-
-    var trigger25 by remember { mutableStateOf(false) }
-    var trigger55 by remember { mutableStateOf(false) }
-    var trigger85 by remember { mutableStateOf(false) }
-
-    val strProg25 = stringResource(R.string.chat_patching_progress, 25)
-    val strProg55 = stringResource(R.string.chat_patching_progress, 55)
-    val strProg85 = stringResource(R.string.chat_patching_progress, 85)
-    
+    val strWait = stringResource(R.string.chat_patching_wait)
+    val strComplex = stringResource(R.string.chat_patching_complex)
+    val strAlmost = stringResource(R.string.chat_patching_almost)
     val strFinished = stringResource(R.string.chat_patching_finished)
-    var trigger100 by remember { mutableStateOf(false) }
-    
-    LaunchedEffect(progress()) {
-        val currentProgress = progress()
-        if (currentProgress >= 0.25f && !trigger25) {
-            trigger25 = true
-            isTyping = true
-            delay(800)
-            messages.add(ChatMessage(nextMessageId++, strProg25))
-            isTyping = false
+
+    // Message sequence with safe typing state
+    LaunchedEffect(Unit) {
+        val messageMutex = Mutex()
+        suspend fun sendMessage(text: String, isUser: Boolean = false, typingDuration: Long = 600L) {
+            messageMutex.withLock {
+                if (!isUser && typingDuration > 0) {
+                    isTyping = true
+                    try {
+                        delay(typingDuration)
+                    } finally {
+                        isTyping = false
+                    }
+                }
+                messages.add(ChatMessage(nextMessageId++, text, isUser))
+            }
         }
-        if (currentProgress >= 0.55f && !trigger55) {
-            trigger55 = true
-            isTyping = true
-            delay(800)
-            messages.add(ChatMessage(nextMessageId++, strProg55))
-            isTyping = false
+
+        // 1. Initial greeting & start conversation
+        sendMessage(strStart, isUser = false, typingDuration = 500L)
+        delay(500L)
+        sendMessage(strUserReply, isUser = true, typingDuration = 0L)
+        delay(400L)
+        sendMessage(strWait, isUser = false, typingDuration = 600L)
+
+        // 2. Track milestones & long step warning
+        var sentComplex = false
+        var sentAlmost = false
+        var sent100 = false
+
+        // Observer for long step warning
+        launch {
+            snapshotFlow { showLongStepWarning }.collect { warning ->
+                if (warning && !sentComplex && !sent100) {
+                    sentComplex = true
+                    sendMessage(strComplex, typingDuration = 700L)
+                }
+            }
         }
-        if (currentProgress >= 0.85f && !trigger85 && currentProgress < 1.0f) {
-            trigger85 = true
-            isTyping = true
-            delay(800)
-            messages.add(ChatMessage(nextMessageId++, strProg85))
-            isTyping = false
-        }
-        if (currentProgress >= 1.0f && !trigger100) {
-            trigger85 = true // in case it skipped 85
-            trigger100 = true
-            isTyping = true
-            delay(800)
-            messages.add(ChatMessage(nextMessageId++, strFinished))
-            isTyping = false
+
+        // Observer for progress milestones
+        launch {
+            snapshotFlow { progress() }.collect { currentProgress ->
+                if (currentProgress >= 0.45f && !sentComplex && !sent100) {
+                    sentComplex = true
+                    sendMessage(strComplex, typingDuration = 700L)
+                }
+                if (currentProgress >= 0.80f && !sentAlmost && currentProgress < 1.0f) {
+                    sentAlmost = true
+                    sendMessage(strAlmost, typingDuration = 600L)
+                }
+                if (currentProgress >= 1.0f && !sent100) {
+                    sent100 = true
+                    sendMessage(strFinished, typingDuration = 600L)
+                }
+            }
         }
     }
 
@@ -157,7 +168,8 @@ fun SimplePatchingInProgress(
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
                             Text("TADa", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = textColor)
-                            Text(stringResource(R.string.chat_header_status, appName), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = greenStatus)
+                            val headerStatus = if (currentStep.isNotBlank()) currentStep else stringResource(R.string.chat_header_status, appName)
+                            Text(headerStatus, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = greenStatus, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -226,11 +238,19 @@ fun SimplePatchingInProgress(
                     trackColor = primaryColor.copy(alpha = 0.2f)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
+                val bottomStatus = if (currentStep.isNotBlank()) {
+                    "${(progress() * 100).toInt()}% • $currentStep"
+                } else {
+                    stringResource(R.string.chat_bottom_status, (progress() * 100).toInt(), appName)
+                }
                 Text(
-                    stringResource(R.string.chat_bottom_status, (progress() * 100).toInt(), appName),
+                    text = bottomStatus,
                     color = textColor.copy(alpha = 0.7f),
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(max = 220.dp)
                 )
             }
         }

@@ -277,7 +277,7 @@ private fun PatcherScreenContent(
             patcherViewModel.postPatchPrompts.trigger()
             appLinksStatus = appLinksManager.getStatus(targetInstalledPackage)
         }
-        if (installState is InstallViewModel.InstallState.Conflict && autoHandleConflict) {
+        if (installState is InstallViewModel.InstallState.Conflict) {
             showInstalledSourceConflictDialog.value = true
         }
     }
@@ -593,16 +593,22 @@ private fun PatcherScreenContent(
                     // this run resolves by dialog is not a screen state at all
                     val shownInstallState = when {
                         effectiveIsInstalling -> InstallViewModel.InstallState.Installing
-                        installState is InstallViewModel.InstallState.Conflict && autoHandleConflict ->
-                            InstallViewModel.InstallState.Ready
                         else -> installState
                     }
 
                     TadaPatchingSuccess(
                         packageName = patcherViewModel.packageName,
-                        appName = patcherViewModel.packageName, // Should pass actual app name if available
+                        appName = patcherViewModel.exportMetadata?.appName ?: patcherViewModel.packageName,
                         patchCount = patcherViewModel.patchCount,
+                        installState = shownInstallState,
                         onInstall = ::installPatchedApp,
+                        onOpen = { installViewModel.openApp() },
+                        onSaveClick = {
+                            if (!isSaving) {
+                                exportApkLauncher.launch(patcherViewModel.exportFileName)
+                            }
+                        },
+                        isSaving = isSaving,
                         onHomeClick = onBackClick
                     )
                 }

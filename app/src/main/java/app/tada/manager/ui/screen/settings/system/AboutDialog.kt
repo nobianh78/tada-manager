@@ -30,10 +30,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,9 +42,11 @@ import androidx.compose.ui.unit.sp
 import app.tada.manager.BuildConfig
 import app.tada.manager.R
 import app.tada.manager.ui.screen.shared.*
-import app.tada.manager.ui.viewmodel.AboutViewModel
 import app.tada.manager.ui.viewmodel.ThemeSettingsViewModel
 import app.tada.manager.util.isolateLtr
+import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.Brands
+import compose.icons.fontawesomeicons.brands.Github
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import kotlin.time.Duration.Companion.milliseconds
@@ -122,24 +124,20 @@ fun AboutDialog(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // App icon on a plain tile, the way the manager sets off every other object it shows
+            // Mascot header in a soft cute rounded container
             Box(
                 modifier = Modifier
-                    .size(100.dp)
-                    .background(neutralVeil(LocalDialogTextColor.current), RoundedCornerShape(24.dp)),
+                    .size(110.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                        RoundedCornerShape(32.dp)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                val icon = rememberDrawablePainter(
-                    drawable = remember {
-                        AppCompatResources.getDrawable(context, R.mipmap.ic_launcher)
-                    }
-                )
                 Image(
-                    painter = icon,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(20.dp))
+                    painter = painterResource(R.drawable.tada_mascot_wave),
+                    contentDescription = stringResource(R.string.app_name),
+                    modifier = Modifier.size(92.dp)
                 )
             }
 
@@ -190,48 +188,55 @@ fun AboutDialog(
                 lineHeight = 26.sp
             )
 
-            // Social Links
-            Row(
+            // Current source code
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                AboutViewModel.socials.forEach { link ->
-                    SocialIconButton(
-                        icon = AboutViewModel.getSocialIcon(link.name),
-                        contentDescription = link.name,
-                        onClick = { uriHandler.openUri(link.url) },
-                        textColor = textColor
+                Text(
+                    text = stringResource(R.string.about_current_source),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = secondaryColor
+                )
+                SettingsGroup {
+                    SettingsItem(
+                        icon = FontAwesomeIcons.Brands.Github,
+                        title = "TADa Manager",
+                        subtitle = "github.com/nobianh78/tada-manager",
+                        onClick = { uriHandler.openUri("https://github.com/nobianh78/tada-manager") }
                     )
                 }
             }
-        }
-    }
-}
 
-/**
- * Social link button.
- * Styled button for opening social media links.
- */
-@Composable
-private fun SocialIconButton(
-    icon: ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit,
-    textColor: Color
-) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.size(52.dp),
-        shape = RoundedCornerShape(Defaults.SettingsCornerRadius),
-        color = textColor.copy(alpha = 0.1f)
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
-                tint = textColor.copy(alpha = 0.8f),
-                modifier = Modifier.size(26.dp)
-            )
+            // Developed based on source code
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.about_based_on_source),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = secondaryColor
+                )
+                SettingsGroup {
+                    SettingsItem(
+                        icon = FontAwesomeIcons.Brands.Github,
+                        title = "Morphe",
+                        subtitle = "github.com/morpheapp",
+                        onClick = { uriHandler.openUri("https://github.com/morpheapp") }
+                    )
+                    SettingsDivider()
+                    SettingsItem(
+                        icon = FontAwesomeIcons.Brands.Github,
+                        title = "ReVanced",
+                        subtitle = "github.com/ReVanced/revanced-manager",
+                        onClick = { uriHandler.openUri("https://github.com/ReVanced/revanced-manager") }
+                    )
+                }
+            }
+
         }
     }
 }

@@ -1190,7 +1190,9 @@ Chi tiết: %2$s"</string>
     <string name="file_picker_show_hidden_files">Hiện tệp ẩn</string>
     <!-- Settings - System Tab - About Section -->
     <string name="settings_system_about">Giới thiệu</string>
-    <string name="settings_system_manager_description">Một dự án mã nguồn mở, mang đến trải nghiệm vá ứng dụng Android hiệu quả với giao diện hiện đại, được phát triển dựa trên phản hồi và đóng góp từ cộng đồng</string>
+    <string name="settings_system_manager_description">TADa Manager là ứng dụng quản lý và tuỳ biến ứng dụng Android hiện đại, mượt mà và dễ thương cùng chú gấu trúc TADa 🐼🎋. Được phát triển dựa trên Morphe và ReVanced với tình yêu dành cho cộng đồng mã nguồn mở!</string>
+    <string name="about_current_source">Mã nguồn hiện tại</string>
+    <string name="about_based_on_source">Phát triển dựa trên mã nguồn</string>
     <string name="credits">Đóng góp</string>
     <string name="credits_current_development">Hiện tại</string>
     <string name="credits_prior_development">Trước đây</string>
@@ -1397,10 +1399,13 @@ Chi tiết: %2$s"</string>
     <string name="onboarding_restart_desc">Chuyến tham quan có hướng dẫn về các tính năng chính</string>
 
     <string name="chat_patching_start">Chào ông! Tui đang vá %1$s nè 🛠️</string>
-    <string name="chat_patching_progress">Xong %1$d%% rồi, đang xử lý tiếp... 💪</string>
-    <string name="chat_patching_finished">Xong rồi! 🎉</string>
-    <string name="chat_typing">đang nhập...</string>
     <string name="chat_user_reply">Ok vá đi bạn</string>
+    <string name="chat_patching_wait">Chờ xíu nha, tui đang nạp các bản vá... 🎋</string>
+    <string name="chat_patching_complex">Bản vá này hơi phức tạp, chờ xíu nha... tui đang ráng nè! 💪</string>
+    <string name="chat_patching_almost">Sắp xong rồi nè, ráng chờ xíu nữa thôi! 📦</string>
+    <string name="chat_patching_progress">Xong %1$d%% rồi, đang xử lý tiếp... 💪</string>
+    <string name="chat_patching_finished">Xong rồi nè! 🎉 Cài đặt ngay thôi!</string>
+    <string name="chat_typing">đang nhập...</string>
     <string name="chat_header_status">đang vá %1$s...</string>
     <string name="chat_bottom_status">%1$d%% • Đang vá %2$s...</string>
 

@@ -1270,7 +1270,9 @@ Details: %2$s"</string>
 
     <!-- Settings - System Tab - About Section -->
     <string name="settings_system_about">About</string>
-    <string name="settings_system_manager_description">An open-source project for modern, streamlined patching of popular Android apps, driven by community feedback and contributions</string>
+    <string name="settings_system_manager_description">A modern, cute, and streamlined patcher for Android apps, accompanied by your panda buddy TADa 🐼🎋. Developed based on Morphe and ReVanced, built with love for the open-source community!</string>
+    <string name="about_current_source">Current source code</string>
+    <string name="about_based_on_source">Developed based on source code</string>
     <string name="credits">Credits</string>
     <string name="credits_current_development">Current development</string>
     <string name="credits_prior_development">Prior development</string>
@@ -1487,10 +1489,13 @@ Do you still want to continue?"</string>
     <string name="onboarding_restart_desc">A guided tour of key features</string>
 
     <string name="chat_patching_start">Hi there! I am patching %1$s for you 🛠️</string>
-    <string name="chat_patching_progress">Done %1$d%%, still working on it... 💪</string>
-    <string name="chat_patching_finished">All done! 🎉</string>
-    <string name="chat_typing">typing...</string>
     <string name="chat_user_reply">Ok go ahead</string>
+    <string name="chat_patching_wait">Hold on a bit, loading the patches... 🎋</string>
+    <string name="chat_patching_complex">This patch is a bit complex, wait a sec... working hard on it! 💪</string>
+    <string name="chat_patching_almost">Almost done, hang on just a little longer! 📦</string>
+    <string name="chat_patching_progress">Done %1$d%%, still working on it... 💪</string>
+    <string name="chat_patching_finished">All done! 🎉 Ready to install!</string>
+    <string name="chat_typing">typing...</string>
     <string name="chat_header_status">patching %1$s...</string>
     <string name="chat_bottom_status">%1$d%% • Patching %2$s...</string>
 

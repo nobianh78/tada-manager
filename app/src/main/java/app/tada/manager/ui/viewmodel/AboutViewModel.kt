@@ -37,7 +37,7 @@ class AboutViewModel : ViewModel() {
             ),
             SocialLink(
                 name = "GitHub",
-                url = "https://github.com/MorpheApp"
+                url = "https://github.com/nobianh78/tada-manager"
             ),
             SocialLink(
                 name = "Reddit",

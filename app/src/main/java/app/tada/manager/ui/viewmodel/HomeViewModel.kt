@@ -150,6 +150,7 @@ class HomeViewModel(
     versionCatalog: AppVersionCatalog,
     private val localApkSources: LocalApkSources
 ) : ViewModel(), ApkDownloadHelperHost {
+
     /** The app list on the home screen. */
     val apps = HomeApps(
         scope = viewModelScope,
@@ -1370,18 +1371,7 @@ class HomeViewModel(
 
         val recommendedVersion = pendingRecommendedVersion
 
-        val shouldAutoUseSaved = !expertMode &&
-                pendingSavedApkInfo != null &&
-                recommendedVersion != null &&
-                pendingSavedApkInfo!!.version == recommendedVersion.version
-
-        if (shouldAutoUseSaved) {
-            // Skip dialog and use saved APK directly
-            handleSavedApkSelection()
-        } else {
-            // Show dialog
-            showApkAvailabilityDialog = true
-        }
+        showApkAvailabilityDialog = true
     }
 
     /**
@@ -2135,7 +2125,6 @@ class HomeViewModel(
             // or ask the user to pick one if multiple bundles have applicable patches.
             // A patch is applicable if:
             //   - compatiblePackages == null (universal), OR
-            //   - compatiblePackages contains this packageName
             val bundleWithPatches = allBundles
                 .filter { it.enabled }
                 .map { bundle ->

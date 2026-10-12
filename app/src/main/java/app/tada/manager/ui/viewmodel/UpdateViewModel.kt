@@ -421,7 +421,35 @@ class UpdateViewModel : ViewModel(), KoinComponent {
                 val targetIsPrerelease = release?.version?.contains('-') == true
                 val forDevBranch = morpheAPI.isDevBuild || targetIsPrerelease
                 val entries = managerEntriesCache.getOrPut(forDevBranch) {
-                    morpheAPI.fetchManagerChangelog(forDevBranch = forDevBranch)
+                    val remote = runCatching { morpheAPI.fetchManagerChangelog(forDevBranch = forDevBranch) }.getOrNull()
+                    if (!remote.isNullOrEmpty()) {
+                        remote
+                    } else {
+                        listOf(
+                            ChangelogEntry(
+                                version = "2.0.1",
+                                date = "2026-10-12",
+                                content = """
+                                    ### Bug Fixes & Improvements
+                                    * **Patcher:** Thêm các câu thoại gấu trúc TADa tự nhiên, sinh động khi vá ứng dụng
+                                    * **UI:** Sửa lỗi bong bóng gấu trúc đang nhập tin nhắn (typing indicator)
+                                    * **Install:** Tối ưu hóa luồng cài đặt, hiển thị trạng thái và nút lưu APK vào bộ nhớ máy
+                                    * **Compatibility:** Cải thiện xử lý xung đột chữ ký khi cài đặt ứng dụng đã vá
+                                """.trimIndent()
+                            ),
+                            ChangelogEntry(
+                                version = "2.0.0",
+                                date = "2026-10-11",
+                                content = """
+                                    ### Features
+                                    * **UI:** Thiết kế lại toàn bộ giao diện hiện đại, dễ thương với tông màu kem ấm áp
+                                    * **Assets:** Tích hợp linh vật gấu trúc TADa Panda đáng yêu xuyên suốt ứng dụng
+                                    * **Settings:** Bổ sung thông tin giới thiệu và liên kết mã nguồn TADa Manager, Morphe và ReVanced
+                                    * **Performance:** Tối ưu hóa hiệu năng và trải nghiệm người dùng
+                                """.trimIndent()
+                            )
+                        )
+                    }
                 }
 
                 val newer = if (release == null) emptyList() else {
@@ -491,12 +519,7 @@ class UpdateViewModel : ViewModel(), KoinComponent {
             .toSet()
         viewModelScope.launch(Dispatchers.Default) {
             try {
-                val entries = managerEntriesCache.getOrPut(false) {
-                    morpheAPI.fetchManagerChangelog(forDevBranch = false)
-                }
-                olderManagerEntries = entries.filter {
-                    it.version.normalizeVersion() !in exclude && !it.isPrerelease
-                }
+                olderManagerEntries = emptyList()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

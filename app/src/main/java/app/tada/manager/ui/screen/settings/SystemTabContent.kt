@@ -110,13 +110,11 @@ fun SystemTabContent(
             icon = Icons.Outlined.Info
         )
 
-        SettingsGroup {
-            AboutSection(
-                onAboutClick = onAboutClick,
-                onChangelogClick = onChangelogClick,
-                onExportDebugLogs = onExportDebugLogs,
-                onStartTour = onStartTour
-            )
-        }
+        AboutSection(
+            onAboutClick = onAboutClick,
+            onChangelogClick = onChangelogClick,
+            onExportDebugLogs = onExportDebugLogs,
+            onStartTour = onStartTour
+        )
     }
 }
